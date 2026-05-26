@@ -4,6 +4,11 @@ import { db } from '../db'
 
 export const categoriesRouter = Router()
 
+function parseId(raw: string): number | null {
+  const id = Number(raw)
+  return Number.isInteger(id) && id > 0 ? id : null
+}
+
 const CategorySchema = z.object({
   name: z.string().min(1).max(50),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#6366f1'),
@@ -33,7 +38,8 @@ categoriesRouter.post('/', async (req, res, next) => {
 
 categoriesRouter.put('/:id', async (req, res, next) => {
   try {
-    const id = Number(req.params.id)
+    const id = parseId(req.params.id)
+    if (id === null) { res.status(400).json({ error: 'Invalid ID' }); return }
     const data = CategorySchema.parse(req.body)
     const result = await db.execute({
       sql: 'UPDATE categories SET name = ?, color = ? WHERE id = ? RETURNING *',
@@ -51,7 +57,8 @@ categoriesRouter.put('/:id', async (req, res, next) => {
 
 categoriesRouter.delete('/:id', async (req, res, next) => {
   try {
-    const id = Number(req.params.id)
+    const id = parseId(req.params.id)
+    if (id === null) { res.status(400).json({ error: 'Invalid ID' }); return }
     await db.execute({ sql: 'DELETE FROM categories WHERE id = ?', args: [id] })
     res.status(204).send()
   } catch (err) {

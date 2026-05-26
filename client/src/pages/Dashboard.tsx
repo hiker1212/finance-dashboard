@@ -3,24 +3,76 @@ import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { summaryApi } from '../api/summary'
 import { transactionsApi } from '../api/transactions'
+import { insightsApi } from '../api/insights'
 import { CategoryBadge } from '../components/CategoryBadge'
+import { SpendingPieChart } from '../components/SpendingPieChart'
+import { MonthlyTrendChart } from '../components/MonthlyTrendChart'
+import type { TrendDataPoint } from '../components/MonthlyTrendChart'
 import type { MonthlySummary, Transaction } from '../types'
+
+function getPrev6Months(selectedMonth: string): string[] {
+  const [year, mon] = selectedMonth.split('-').map(Number)
+  const months: string[] = []
+  for (let i = 5; i >= 0; i--) {
+    let m = mon - i
+    let y = year
+    while (m <= 0) { m += 12; y-- }
+    months.push(`${y}-${String(m).padStart(2, '0')}`)
+  }
+  return months
+}
 
 export function Dashboard() {
   const { selectedMonth, setSelectedMonth } = useApp()
   const [summary, setSummary] = useState<MonthlySummary | null>(null)
   const [recent, setRecent] = useState<Transaction[]>([])
+  const [trend, setTrend] = useState<TrendDataPoint[]>([])
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
+  const [insights, setInsights] = useState<string>('')
+  const [insightsLoading, setInsightsLoading] = useState(false)
+  const [insightsError, setInsightsError] = useState<string>('')
+
+  async function handleGenerateInsights() {
+    setInsightsLoading(true)
+    setInsightsError('')
+    try {
+      const { insights: text } = await insightsApi.generate(selectedMonth)
+      setInsights(text)
+    } catch (err) {
+      setInsightsError(err instanceof Error ? err.message : 'Failed to generate insights')
+    } finally {
+      setInsightsLoading(false)
+    }
+  }
+
+  async function handleExportPdf() {
+    if (!summary) return
+    setExporting(true)
+    try {
+      const { exportSummaryToPdf } = await import('../utils/exportPdf')
+      await exportSummaryToPdf(summary, recent)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [s, txs] = await Promise.all([
+      const months = getPrev6Months(selectedMonth)
+      const [s, txs, monthSummaries] = await Promise.all([
         summaryApi.get(selectedMonth),
         transactionsApi.list(selectedMonth),
+        Promise.all(months.map(m => summaryApi.get(m))),
       ])
       setSummary(s)
       setRecent(txs.slice(0, 5))
+      setTrend(months.map((month, i) => ({
+        month,
+        income: monthSummaries[i].total_income,
+        expenses: monthSummaries[i].total_expenses,
+      })))
     } finally {
       setLoading(false)
     }
@@ -35,11 +87,21 @@ export function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <input
-          type="month" value={selectedMonth}
-          onChange={e => setSelectedMonth(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="month" value={selectedMonth}
+            onChange={e => setSelectedMonth(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <button
+            onClick={handleExportPdf}
+            disabled={exporting || !summary}
+            title="Export PDF report"
+            className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+          >
+            ⬇ PDF
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -60,38 +122,11 @@ export function Dashboard() {
             ))}
           </div>
 
-          {/* Category spending */}
-          {summary && summary.by_category.filter(c => c.spent > 0).length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h2 className="text-sm font-semibold text-gray-700 mb-4">Spending by category</h2>
-              <div className="space-y-3">
-                {summary.by_category
-                  .filter(c => c.spent > 0)
-                  .map(c => {
-                    const pct = c.monthly_limit ? Math.min((c.spent / c.monthly_limit) * 100, 100) : null
-                    const isOver = c.monthly_limit != null && c.spent > c.monthly_limit
-                    return (
-                      <div key={c.id} className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
-                        <span className="text-sm text-gray-700 w-28 truncate">{c.name}</span>
-                        {pct !== null && (
-                          <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                            <div
-                              className={`h-1.5 rounded-full ${isOver ? 'bg-red-500' : pct >= 80 ? 'bg-amber-400' : 'bg-emerald-500'}`}
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                        )}
-                        <span className={`text-sm font-semibold tabular-nums ml-auto ${isOver ? 'text-red-500' : 'text-gray-700'}`}>
-                          ${c.spent.toFixed(2)}
-                          {c.monthly_limit && <span className="text-xs text-gray-400 font-normal"> / ${c.monthly_limit}</span>}
-                        </span>
-                      </div>
-                    )
-                  })}
-              </div>
-            </div>
-          )}
+          {/* Charts row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SpendingPieChart data={summary?.by_category ?? []} />
+            <MonthlyTrendChart data={trend} />
+          </div>
 
           {/* Recent transactions */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -121,6 +156,34 @@ export function Dashboard() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* AI Insights */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-700">AI Spending Insights</h2>
+              <button
+                onClick={handleGenerateInsights}
+                disabled={insightsLoading}
+                className="px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              >
+                {insightsLoading ? 'Analyzing…' : insights ? 'Refresh' : 'Generate insights'}
+              </button>
+            </div>
+            {insightsError && (
+              <p className="text-red-500 text-sm">{insightsError}</p>
+            )}
+            {insightsLoading && (
+              <p className="text-gray-400 text-sm animate-pulse">Analyzing your spending data…</p>
+            )}
+            {!insightsLoading && !insightsError && insights && (
+              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{insights}</p>
+            )}
+            {!insightsLoading && !insightsError && !insights && (
+              <p className="text-gray-400 text-sm text-center py-4">
+                Click "Generate insights" to get AI-powered analysis of your spending this month.
+              </p>
             )}
           </div>
         </>

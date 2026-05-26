@@ -8,7 +8,8 @@ A personal finance tracker built as a hands-on learning project to explore every
 - Dashboard with KPI cards (income, expenses, net savings) and category spending bars
 - Budget limits per category with green/amber/red progress indicators
 - Monthly filtering across all views
-- *(Coming)* Recharts data visualization, PDF/Excel export, AI spending insights
+- Recharts data visualization (spending pie chart, 6-month income/expense trend)
+- *(Coming)* PDF/Excel export, AI spending insights
 
 ## Tech stack
 

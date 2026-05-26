@@ -19,6 +19,9 @@ export function Modal({ title, onClose, children }: Props) {
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
         className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6"
         onClick={e => e.stopPropagation()}
       >
