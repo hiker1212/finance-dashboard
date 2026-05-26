@@ -27,6 +27,18 @@ export function Dashboard() {
   const [recent, setRecent] = useState<Transaction[]>([])
   const [trend, setTrend] = useState<TrendDataPoint[]>([])
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
+
+  async function handleExportPdf() {
+    if (!summary) return
+    setExporting(true)
+    try {
+      const { exportSummaryToPdf } = await import('../utils/exportPdf')
+      await exportSummaryToPdf(summary, recent)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -58,11 +70,21 @@ export function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <input
-          type="month" value={selectedMonth}
-          onChange={e => setSelectedMonth(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="month" value={selectedMonth}
+            onChange={e => setSelectedMonth(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <button
+            onClick={handleExportPdf}
+            disabled={exporting || !summary}
+            title="Export PDF report"
+            className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+          >
+            ⬇ PDF
+          </button>
+        </div>
       </div>
 
       {loading ? (

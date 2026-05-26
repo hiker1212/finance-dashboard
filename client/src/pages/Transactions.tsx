@@ -1,26 +1,54 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../context/AppContext'
 import { transactionsApi } from '../api/transactions'
+import { summaryApi } from '../api/summary'
 import { TransactionList } from '../components/TransactionList'
 import { TransactionForm } from '../components/TransactionForm'
 import { Modal } from '../components/Modal'
-import type { Transaction } from '../types'
+import type { Transaction, MonthlySummary } from '../types'
 
 export function Transactions() {
   const { categories, selectedMonth, setSelectedMonth } = useApp()
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [summary, setSummary] = useState<MonthlySummary | null>(null)
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
   const [editing, setEditing] = useState<Transaction | null | undefined>(undefined)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await transactionsApi.list(selectedMonth)
+      const [data, s] = await Promise.all([
+        transactionsApi.list(selectedMonth),
+        summaryApi.get(selectedMonth),
+      ])
       setTransactions(data)
+      setSummary(s)
     } finally {
       setLoading(false)
     }
   }, [selectedMonth])
+
+  async function handleExportExcel() {
+    setExporting(true)
+    try {
+      const { exportTransactionsToExcel } = await import('../utils/exportExcel')
+      await exportTransactionsToExcel(transactions, selectedMonth)
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  async function handleExportPdf() {
+    if (!summary) return
+    setExporting(true)
+    try {
+      const { exportSummaryToPdf } = await import('../utils/exportPdf')
+      await exportSummaryToPdf(summary, transactions)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   useEffect(() => { load() }, [load])
 
@@ -50,12 +78,28 @@ export function Transactions() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <input
             type="month" value={selectedMonth}
             onChange={e => setSelectedMonth(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
+          <button
+            onClick={handleExportExcel}
+            disabled={exporting || transactions.length === 0}
+            title="Export to Excel"
+            className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+          >
+            ⬇ Excel
+          </button>
+          <button
+            onClick={handleExportPdf}
+            disabled={exporting || !summary}
+            title="Export PDF report"
+            className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+          >
+            ⬇ PDF
+          </button>
           <button
             onClick={() => setEditing(null)}
             className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
