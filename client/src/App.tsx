@@ -1,11 +1,20 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Layout } from './components/Layout'
+import { Dashboard } from './pages/Dashboard'
+import { Transactions } from './pages/Transactions'
+import { Budgets } from './pages/Budgets'
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Finance Dashboard</h1>
-        <p className="text-gray-500">Setup complete — Phase 2 coming next.</p>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="transactions" element={<Transactions />} />
+          <Route path="budgets" element={<Budgets />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 
