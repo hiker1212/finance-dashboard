@@ -2,8 +2,9 @@ import { createClient } from '@libsql/client'
 import path from 'path'
 
 const dbPath = process.env.DB_PATH ?? path.join(process.cwd(), 'data.db')
+const url = dbPath === ':memory:' ? ':memory:' : `file:${dbPath}`
 
-export const db = createClient({ url: `file:${dbPath}` })
+export const db = createClient({ url })
 
 export async function initDb(): Promise<void> {
   await db.execute(`
