@@ -4,6 +4,13 @@ import { db } from '../db'
 
 export const transactionsRouter = Router()
 
+const MonthParam = z.string().regex(/^\d{4}-\d{2}$/, 'month must be YYYY-MM')
+
+function parseId(raw: string): number | null {
+  const id = Number(raw)
+  return Number.isInteger(id) && id > 0 ? id : null
+}
+
 const TransactionSchema = z.object({
   amount: z.number().positive(),
   type: z.enum(['income', 'expense']),
@@ -14,7 +21,8 @@ const TransactionSchema = z.object({
 
 transactionsRouter.get('/', async (req, res, next) => {
   try {
-    const month = req.query.month as string | undefined
+    const rawMonth = req.query.month as string | undefined
+    const month = rawMonth ? MonthParam.parse(rawMonth) : undefined
 
     let sql = `
       SELECT t.*, c.name AS category_name, c.color AS category_color
@@ -53,7 +61,8 @@ transactionsRouter.post('/', async (req, res, next) => {
 
 transactionsRouter.put('/:id', async (req, res, next) => {
   try {
-    const id = Number(req.params.id)
+    const id = parseId(req.params.id)
+    if (id === null) { res.status(400).json({ error: 'Invalid ID' }); return }
     const data = TransactionSchema.parse(req.body)
     const result = await db.execute({
       sql: `UPDATE transactions
@@ -73,7 +82,8 @@ transactionsRouter.put('/:id', async (req, res, next) => {
 
 transactionsRouter.delete('/:id', async (req, res, next) => {
   try {
-    const id = Number(req.params.id)
+    const id = parseId(req.params.id)
+    if (id === null) { res.status(400).json({ error: 'Invalid ID' }); return }
     await db.execute({ sql: 'DELETE FROM transactions WHERE id = ?', args: [id] })
     res.status(204).send()
   } catch (err) {

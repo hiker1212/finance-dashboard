@@ -1,9 +1,18 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
+import rateLimit from 'express-rate-limit'
 import { db } from '../db'
 
 export const insightsRouter = Router()
+
+insightsRouter.use(rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many insight requests — please try again later.' },
+}))
 
 const client = new Anthropic()
 
