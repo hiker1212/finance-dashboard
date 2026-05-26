@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { summaryApi } from '../api/summary'
 import { transactionsApi } from '../api/transactions'
+import { insightsApi } from '../api/insights'
 import { CategoryBadge } from '../components/CategoryBadge'
 import { SpendingPieChart } from '../components/SpendingPieChart'
 import { MonthlyTrendChart } from '../components/MonthlyTrendChart'
@@ -28,6 +29,22 @@ export function Dashboard() {
   const [trend, setTrend] = useState<TrendDataPoint[]>([])
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
+  const [insights, setInsights] = useState<string>('')
+  const [insightsLoading, setInsightsLoading] = useState(false)
+  const [insightsError, setInsightsError] = useState<string>('')
+
+  async function handleGenerateInsights() {
+    setInsightsLoading(true)
+    setInsightsError('')
+    try {
+      const { insights: text } = await insightsApi.generate(selectedMonth)
+      setInsights(text)
+    } catch (err) {
+      setInsightsError(err instanceof Error ? err.message : 'Failed to generate insights')
+    } finally {
+      setInsightsLoading(false)
+    }
+  }
 
   async function handleExportPdf() {
     if (!summary) return
@@ -139,6 +156,34 @@ export function Dashboard() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* AI Insights */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-700">AI Spending Insights</h2>
+              <button
+                onClick={handleGenerateInsights}
+                disabled={insightsLoading}
+                className="px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              >
+                {insightsLoading ? 'Analyzing…' : insights ? 'Refresh' : 'Generate insights'}
+              </button>
+            </div>
+            {insightsError && (
+              <p className="text-red-500 text-sm">{insightsError}</p>
+            )}
+            {insightsLoading && (
+              <p className="text-gray-400 text-sm animate-pulse">Analyzing your spending data…</p>
+            )}
+            {!insightsLoading && !insightsError && insights && (
+              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{insights}</p>
+            )}
+            {!insightsLoading && !insightsError && !insights && (
+              <p className="text-gray-400 text-sm text-center py-4">
+                Click "Generate insights" to get AI-powered analysis of your spending this month.
+              </p>
             )}
           </div>
         </>
