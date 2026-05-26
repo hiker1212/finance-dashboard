@@ -4,23 +4,46 @@ import { useApp } from '../context/AppContext'
 import { summaryApi } from '../api/summary'
 import { transactionsApi } from '../api/transactions'
 import { CategoryBadge } from '../components/CategoryBadge'
+import { SpendingPieChart } from '../components/SpendingPieChart'
+import { MonthlyTrendChart } from '../components/MonthlyTrendChart'
+import type { TrendDataPoint } from '../components/MonthlyTrendChart'
 import type { MonthlySummary, Transaction } from '../types'
+
+function getPrev6Months(selectedMonth: string): string[] {
+  const [year, mon] = selectedMonth.split('-').map(Number)
+  const months: string[] = []
+  for (let i = 5; i >= 0; i--) {
+    let m = mon - i
+    let y = year
+    while (m <= 0) { m += 12; y-- }
+    months.push(`${y}-${String(m).padStart(2, '0')}`)
+  }
+  return months
+}
 
 export function Dashboard() {
   const { selectedMonth, setSelectedMonth } = useApp()
   const [summary, setSummary] = useState<MonthlySummary | null>(null)
   const [recent, setRecent] = useState<Transaction[]>([])
+  const [trend, setTrend] = useState<TrendDataPoint[]>([])
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [s, txs] = await Promise.all([
+      const months = getPrev6Months(selectedMonth)
+      const [s, txs, monthSummaries] = await Promise.all([
         summaryApi.get(selectedMonth),
         transactionsApi.list(selectedMonth),
+        Promise.all(months.map(m => summaryApi.get(m))),
       ])
       setSummary(s)
       setRecent(txs.slice(0, 5))
+      setTrend(months.map((month, i) => ({
+        month,
+        income: monthSummaries[i].total_income,
+        expenses: monthSummaries[i].total_expenses,
+      })))
     } finally {
       setLoading(false)
     }
@@ -60,38 +83,11 @@ export function Dashboard() {
             ))}
           </div>
 
-          {/* Category spending */}
-          {summary && summary.by_category.filter(c => c.spent > 0).length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h2 className="text-sm font-semibold text-gray-700 mb-4">Spending by category</h2>
-              <div className="space-y-3">
-                {summary.by_category
-                  .filter(c => c.spent > 0)
-                  .map(c => {
-                    const pct = c.monthly_limit ? Math.min((c.spent / c.monthly_limit) * 100, 100) : null
-                    const isOver = c.monthly_limit != null && c.spent > c.monthly_limit
-                    return (
-                      <div key={c.id} className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
-                        <span className="text-sm text-gray-700 w-28 truncate">{c.name}</span>
-                        {pct !== null && (
-                          <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                            <div
-                              className={`h-1.5 rounded-full ${isOver ? 'bg-red-500' : pct >= 80 ? 'bg-amber-400' : 'bg-emerald-500'}`}
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                        )}
-                        <span className={`text-sm font-semibold tabular-nums ml-auto ${isOver ? 'text-red-500' : 'text-gray-700'}`}>
-                          ${c.spent.toFixed(2)}
-                          {c.monthly_limit && <span className="text-xs text-gray-400 font-normal"> / ${c.monthly_limit}</span>}
-                        </span>
-                      </div>
-                    )
-                  })}
-              </div>
-            </div>
-          )}
+          {/* Charts row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SpendingPieChart data={summary?.by_category ?? []} />
+            <MonthlyTrendChart data={trend} />
+          </div>
 
           {/* Recent transactions */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
