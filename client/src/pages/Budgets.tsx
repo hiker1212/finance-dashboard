@@ -138,9 +138,9 @@ export function Budgets() {
         <Modal title={`Budget for ${editingBudget.name}`} onClose={() => setEditingBudget(null)}>
           <form onSubmit={handleSaveBudget} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Monthly limit ($)</label>
+              <label htmlFor="budget-limit" className="block text-sm font-medium text-gray-700 mb-1">Monthly limit ($)</label>
               <input
-                type="number" step="0.01" min="0.01"
+                id="budget-limit" type="number" step="0.01" min="0.01"
                 value={limitInput} onChange={e => setLimitInput(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required autoFocus

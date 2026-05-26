@@ -47,16 +47,16 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+          <label htmlFor="tx-amount" className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
           <input
-            type="number" step="0.01" min="0.01"
+            id="tx-amount" type="number" step="0.01" min="0.01"
             value={amount} onChange={e => setAmount(e.target.value)}
             className={inputCls} required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-          <select value={type} onChange={e => setType(e.target.value as 'income' | 'expense')} className={inputCls}>
+          <label htmlFor="tx-type" className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <select id="tx-type" value={type} onChange={e => setType(e.target.value as 'income' | 'expense')} className={inputCls}>
             <option value="expense">Expense</option>
             <option value="income">Income</option>
           </select>
@@ -64,17 +64,17 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label htmlFor="tx-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
         <input
-          type="text" value={description} onChange={e => setDescription(e.target.value)}
+          id="tx-description" type="text" value={description} onChange={e => setDescription(e.target.value)}
           className={inputCls} required placeholder="e.g. Grocery run"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          <select value={categoryId} onChange={e => setCategoryId(e.target.value)} className={inputCls}>
+          <label htmlFor="tx-category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select id="tx-category" value={categoryId} onChange={e => setCategoryId(e.target.value)} className={inputCls}>
             <option value="">Uncategorized</option>
             {categories.map(c => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -82,9 +82,9 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <label htmlFor="tx-date" className="block text-sm font-medium text-gray-700 mb-1">Date</label>
           <input
-            type="date" value={date} onChange={e => setDate(e.target.value)}
+            id="tx-date" type="date" value={date} onChange={e => setDate(e.target.value)}
             className={inputCls} required
           />
         </div>
