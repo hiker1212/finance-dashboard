@@ -33,6 +33,13 @@ export interface CategorySummary {
   monthly_limit: number | null
 }
 
+export interface CategoryAvgSpending {
+  id: number
+  name: string
+  color: string
+  avg_monthly_spending: number
+}
+
 export interface MonthlySummary {
   month: string
   total_income: number
