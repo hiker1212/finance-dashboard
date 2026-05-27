@@ -10,6 +10,7 @@ export function Layout() {
             { to: '/', label: 'Dashboard' },
             { to: '/transactions', label: 'Transactions' },
             { to: '/budgets', label: 'Budgets' },
+            { to: '/analytics', label: 'Analytics' },
           ].map(({ to, label }) => (
             <NavLink
               key={to}
