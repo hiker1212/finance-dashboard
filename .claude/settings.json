@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read -r f; if [[ \"$f\" == /home/user/finance-dashboard/client/* ]]; then cd /home/user/finance-dashboard/client && npx eslint --fix \"$f\" 2>/dev/null || true; fi; }",
+            "statusMessage": "ESLint fixing…"
+          },
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read -r f; if [[ \"$f\" != *.test.ts ]]; then exit 0; fi; if [[ \"$f\" == /home/user/finance-dashboard/server/* ]]; then rel=\"${f#/home/user/finance-dashboard/server/}\"; cd /home/user/finance-dashboard/server && npx vitest run \"$rel\" 2>&1 | tail -20; fi; }",
+            "statusMessage": "Running tests…"
+          }
+        ]
+      }
+    ]
+  }
+}
