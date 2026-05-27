@@ -11,6 +11,11 @@ export function Layout() {
             { to: '/transactions', label: 'Transactions' },
             { to: '/budgets', label: 'Budgets' },
             { to: '/analytics', label: 'Analytics' },
+            { to: '/chat', label: 'Ask AI' },
+            { to: '/batch', label: 'Batch' },
+            { to: '/import', label: 'Import' },
+            { to: '/usage', label: 'Usage' },
+            { to: '/analysis', label: 'Analysis' },
           ].map(({ to, label }) => (
             <NavLink
               key={to}

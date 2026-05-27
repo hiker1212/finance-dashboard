@@ -3,6 +3,7 @@ import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
 import rateLimit from 'express-rate-limit'
 import { db } from '../db'
+import { recordUsage } from '../tokenTracker'
 
 export const insightsRouter = Router()
 
@@ -31,72 +32,99 @@ const BodySchema = z.object({
   month: z.string().regex(/^\d{4}-\d{2}$/, 'month must be YYYY-MM'),
 })
 
+async function buildSummary(month: string) {
+  const [totals, byCategory, transactions] = await Promise.all([
+    db.execute({
+      sql: `SELECT
+              COALESCE(SUM(CASE WHEN type = 'income'  THEN amount ELSE 0 END), 0) AS total_income,
+              COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS total_expenses
+            FROM transactions WHERE strftime('%Y-%m', date) = ?`,
+      args: [month],
+    }),
+    db.execute({
+      sql: `SELECT c.name,
+              COALESCE(SUM(t.amount), 0) AS spent,
+              b.monthly_limit
+            FROM categories c
+            LEFT JOIN transactions t
+              ON t.category_id = c.id AND t.type = 'expense'
+              AND strftime('%Y-%m', t.date) = ?
+            LEFT JOIN budgets b ON b.category_id = c.id
+            GROUP BY c.id ORDER BY spent DESC`,
+      args: [month],
+    }),
+    db.execute({
+      sql: `SELECT t.date, t.type, t.amount, t.description, c.name AS category
+            FROM transactions t
+            LEFT JOIN categories c ON c.id = t.category_id
+            WHERE strftime('%Y-%m', t.date) = ?
+            ORDER BY t.date DESC`,
+      args: [month],
+    }),
+  ])
+  return {
+    month,
+    total_income: totals.rows[0].total_income,
+    total_expenses: totals.rows[0].total_expenses,
+    net: Number(totals.rows[0].total_income) - Number(totals.rows[0].total_expenses),
+    by_category: byCategory.rows,
+    transactions: transactions.rows,
+  }
+}
+
+const MESSAGE_PARAMS = (summaryJson: string) => ({
+  model: 'claude-sonnet-4-6' as const,
+  max_tokens: 512,
+  system: [{ type: 'text' as const, text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' as const } }],
+  messages: [{ role: 'user' as const, content: summaryJson }],
+})
+
 insightsRouter.post('/', async (req, res, next) => {
   try {
     const { month } = BodySchema.parse(req.body)
+    const summary = await buildSummary(month)
+    const message = await client.messages.create(
+      MESSAGE_PARAMS(`Here is my financial data for ${month}:\n\n${JSON.stringify(summary, null, 2)}`)
+    )
+    recordUsage('insights', message.usage)
+    const block = message.content[0]
+    res.json({ insights: block.type === 'text' ? block.text : '' })
+  } catch (err) {
+    next(err)
+  }
+})
 
-    const [totals, byCategory, transactions] = await Promise.all([
-      db.execute({
-        sql: `SELECT
-                COALESCE(SUM(CASE WHEN type = 'income'  THEN amount ELSE 0 END), 0) AS total_income,
-                COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS total_expenses
-              FROM transactions WHERE strftime('%Y-%m', date) = ?`,
-        args: [month],
-      }),
-      db.execute({
-        sql: `SELECT c.name,
-                COALESCE(SUM(t.amount), 0) AS spent,
-                b.monthly_limit
-              FROM categories c
-              LEFT JOIN transactions t
-                ON t.category_id = c.id AND t.type = 'expense'
-                AND strftime('%Y-%m', t.date) = ?
-              LEFT JOIN budgets b ON b.category_id = c.id
-              GROUP BY c.id ORDER BY spent DESC`,
-        args: [month],
-      }),
-      db.execute({
-        sql: `SELECT t.date, t.type, t.amount, t.description, c.name AS category
-              FROM transactions t
-              LEFT JOIN categories c ON c.id = t.category_id
-              WHERE strftime('%Y-%m', t.date) = ?
-              ORDER BY t.date DESC`,
-        args: [month],
-      }),
-    ])
+insightsRouter.post('/stream', async (req, res, next) => {
+  try {
+    const { month } = BodySchema.parse(req.body)
+    const summary = await buildSummary(month)
 
-    const summary = {
-      month,
-      total_income: totals.rows[0].total_income,
-      total_expenses: totals.rows[0].total_expenses,
-      net: Number(totals.rows[0].total_income) - Number(totals.rows[0].total_expenses),
-      by_category: byCategory.rows,
-      transactions: transactions.rows,
-    }
+    // Commit to SSE only after DB succeeds — errors before this still return JSON
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders()
 
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 512,
-      system: [
-        {
-          type: 'text',
-          text: SYSTEM_PROMPT,
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
-      messages: [
-        {
-          role: 'user',
-          content: `Here is my financial data for ${month}:\n\n${JSON.stringify(summary, null, 2)}`,
-        },
-      ],
+    const stream = client.messages.stream(
+      MESSAGE_PARAMS(`Here is my financial data for ${month}:\n\n${JSON.stringify(summary, null, 2)}`)
+    )
+
+    stream.on('text', (text) => {
+      res.write(`data: ${JSON.stringify(text)}\n\n`)
     })
 
-    const block = message.content[0]
-    const insights = block.type === 'text' ? block.text : ''
+    stream.on('error', (err) => {
+      res.write(`event: error\ndata: ${JSON.stringify(err.message)}\n\n`)
+      res.end()
+    })
 
-    res.json({ insights })
+    stream.on('finalMessage', (message) => {
+      recordUsage('insights_stream', message.usage)
+      res.write('data: [DONE]\n\n')
+      res.end()
+    })
   } catch (err) {
+    // Only reached if body parse or DB query fails before headers are flushed
     next(err)
   }
 })
