@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { analysisApi, AnalysisResult } from '../api/analysis'
+import { analysisApi, type AnalysisResult } from '../api/analysis'
 
 export function Analysis() {
   const [loading, setLoading] = useState(false)

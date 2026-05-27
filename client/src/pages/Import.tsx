@@ -92,6 +92,7 @@ export function Import() {
           description: tx.description,
           amount: tx.amount,
           type: tx.type,
+          category_id: null,
         }).then(() => { count++ })
       ))
       setImportedCount(count)
