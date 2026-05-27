@@ -21,7 +21,7 @@ export const app = express()
 // Disable CSP when serving the SPA so Vite's module preload works
 app.use(helmet({ contentSecurityPolicy: !process.env.STATIC_PATH }))
 app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173' }))
-app.use(express.json({ limit: '10kb' }))
+app.use(express.json({ limit: '110kb' }))
 
 app.use('/api/categories', categoriesRouter)
 app.use('/api/transactions', transactionsRouter)

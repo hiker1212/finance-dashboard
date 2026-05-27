@@ -1,9 +1,18 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
+import rateLimit from 'express-rate-limit'
 import { db } from '../db'
 
 export const batchRouter = Router()
+
+batchRouter.use(rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — please try again later.' },
+}))
 
 const client = new Anthropic()
 
@@ -97,7 +106,7 @@ batchRouter.post('/', async (req, res, next) => {
   }
 })
 
-const IdSchema = z.object({ id: z.string().min(1) })
+const IdSchema = z.object({ id: z.string().min(1).max(64).regex(/^[a-zA-Z0-9_-]+$/) })
 
 // GET /api/batch/:id — poll for status
 batchRouter.get('/:id', async (req, res, next) => {
