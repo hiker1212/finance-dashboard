@@ -36,9 +36,11 @@ export function Dashboard() {
   async function handleGenerateInsights() {
     setInsightsLoading(true)
     setInsightsError('')
+    setInsights('')
     try {
-      const { insights: text } = await insightsApi.generate(selectedMonth)
-      setInsights(text)
+      for await (const chunk of insightsApi.stream(selectedMonth)) {
+        setInsights(prev => prev + chunk)
+      }
     } catch (err) {
       setInsightsError(err instanceof Error ? err.message : 'Failed to generate insights')
     } finally {
