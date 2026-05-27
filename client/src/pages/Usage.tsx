@@ -74,7 +74,7 @@ export function Usage() {
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                {['Feature', 'Calls', 'Input tokens', 'Output tokens', 'Est. cost'].map(h => (
+                {['Feature', 'Calls', 'Input tokens', 'Output tokens', 'Cache writes', 'Cache reads', 'Est. cost', 'Savings'].map(h => (
                   <th key={h} className="px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
                     {h}
                   </th>
@@ -84,7 +84,7 @@ export function Usage() {
             <tbody className="divide-y divide-gray-100">
               {summary.features.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-sm text-gray-400 text-center">
+                  <td colSpan={8} className="px-4 py-6 text-sm text-gray-400 text-center">
                     No API calls recorded yet — use Insights, Score, or Ask AI first.
                   </td>
                 </tr>
@@ -98,7 +98,14 @@ export function Usage() {
                       <td className="px-4 py-2.5 text-sm tabular-nums text-gray-600">{fmt(f.calls)}</td>
                       <td className="px-4 py-2.5 text-sm tabular-nums text-gray-600">{fmt(f.input_tokens)}</td>
                       <td className="px-4 py-2.5 text-sm tabular-nums text-gray-600">{fmt(f.output_tokens)}</td>
+                      <td className="px-4 py-2.5 text-sm tabular-nums text-gray-600">{fmt(f.cache_creation_tokens)}</td>
+                      <td className="px-4 py-2.5 text-sm tabular-nums text-gray-600">{fmt(f.cache_read_tokens)}</td>
                       <td className="px-4 py-2.5 text-sm tabular-nums font-medium text-gray-900">{fmtCost(f.cost)}</td>
+                      <td className="px-4 py-2.5 text-sm tabular-nums font-medium">
+                        {f.cache_savings > 0
+                          ? <span className="text-green-600">{fmtCost(f.cache_savings)}</span>
+                          : <span className="text-gray-400">—</span>}
+                      </td>
                     </tr>
                   ))}
                   <tr className="bg-gray-50 font-semibold border-t-2 border-gray-200">
@@ -106,7 +113,14 @@ export function Usage() {
                     <td className="px-4 py-2.5 text-sm tabular-nums">{fmt(summary.totals.calls)}</td>
                     <td className="px-4 py-2.5 text-sm tabular-nums">{fmt(summary.totals.input_tokens)}</td>
                     <td className="px-4 py-2.5 text-sm tabular-nums">{fmt(summary.totals.output_tokens)}</td>
+                    <td className="px-4 py-2.5 text-sm tabular-nums">{fmt(summary.totals.cache_creation_tokens)}</td>
+                    <td className="px-4 py-2.5 text-sm tabular-nums">{fmt(summary.totals.cache_read_tokens)}</td>
                     <td className="px-4 py-2.5 text-sm tabular-nums text-indigo-700">{fmtCost(summary.totals.cost)}</td>
+                    <td className="px-4 py-2.5 text-sm tabular-nums">
+                      {summary.totals.cache_savings > 0
+                        ? <span className="text-green-600">{fmtCost(summary.totals.cache_savings)}</span>
+                        : <span className="text-gray-400">—</span>}
+                    </td>
                   </tr>
                 </>
               )}
@@ -116,7 +130,7 @@ export function Usage() {
 
         {summary && (
           <p className="text-xs text-gray-400 px-5 py-3 border-t border-gray-100">
-            Pricing: ${summary.pricing.input_per_million}/M input · ${summary.pricing.output_per_million}/M output (claude-sonnet-4-6)
+            Pricing: ${summary.pricing.input_per_million}/M input · ${summary.pricing.output_per_million}/M output · Cache reads: $0.30/M · Cache writes: $3.75/M (claude-sonnet-4-6)
           </p>
         )}
       </div>

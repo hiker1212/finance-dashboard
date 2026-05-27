@@ -86,7 +86,7 @@ importRouter.post('/preview', async (req, res, next) => {
       })
 
       const block = response.content.find(b => b.type === 'tool_use')
-      recordUsage('import', response.usage.input_tokens, response.usage.output_tokens)
+      recordUsage('import', response.usage)
       if (!block || block.type !== 'tool_use') throw new Error('No extraction block returned')
       extracted = block.input as Record<string, unknown>
     } finally {

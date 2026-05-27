@@ -5,12 +5,23 @@ export interface FeatureCost {
   calls: number
   input_tokens: number
   output_tokens: number
+  cache_creation_tokens: number
+  cache_read_tokens: number
   cost: number
+  cache_savings: number
 }
 
 export interface UsageSummary {
   features: FeatureCost[]
-  totals: { calls: number; input_tokens: number; output_tokens: number; cost: number }
+  totals: {
+    calls: number
+    input_tokens: number
+    output_tokens: number
+    cache_creation_tokens: number
+    cache_read_tokens: number
+    cost: number
+    cache_savings: number
+  }
   pricing: { input_per_million: number; output_per_million: number }
 }
 

@@ -95,7 +95,7 @@ scoreRouter.post('/', async (req, res, next) => {
       }],
     })
 
-    recordUsage('score', response.usage.input_tokens, response.usage.output_tokens)
+    recordUsage('score', response.usage)
     const block = response.content.find(b => b.type === 'tool_use')
     if (!block || block.type !== 'tool_use') throw new Error('No score block in response')
 

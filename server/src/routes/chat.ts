@@ -183,7 +183,7 @@ Be concise, specific, and format currency as $X,XXX.XX.`
         messages,
       })
 
-      recordUsage('chat', response.usage.input_tokens, response.usage.output_tokens)
+      recordUsage('chat', response.usage)
       if (response.stop_reason === 'end_turn') {
         const textBlock = response.content.find(b => b.type === 'text')
         const answer = textBlock?.type === 'text' ? textBlock.text : ''
