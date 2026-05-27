@@ -217,7 +217,7 @@ Choices already made — do not change without discussion:
 |---|---|---|
 | Standard model | `claude-sonnet-4-6` | Fast and cost-effective for insights |
 | Deep analysis model | `claude-opus-4-7` | Adaptive thinking for complex reasoning |
-| Thinking mode | `thinking: { type: 'adaptive' }` | Let model decide how much to think |
+| Thinking mode | `thinking: { type: 'enabled', budget_tokens: 10000 }` | SDK requires `enabled`; `adaptive` is not a valid SDK type |
 | Prompt caching | `cache_control: { type: 'ephemeral' }` on system prompt | Reduces cost on repeated calls |
 | Rate limit | 5 req / 10 min | Prevents runaway API spend |
 | API key source | `process.env.ANTHROPIC_API_KEY` only | Never hardcoded |
@@ -246,3 +246,6 @@ The `.env` file and all `*.db` / `*.db-journal` files are gitignored and must ne
 - React Context only: scope does not justify a state library.
 - Named exports everywhere: makes refactoring and tree-shaking predictable.
 - Zod at the route boundary: validation lives next to the handler, not in a separate layer.
+- `tokenTracker.ts` is an in-memory singleton — sufficient for dev sessions; production usage tracking belongs in a DB table.
+- `express.json({ limit: '110kb' })` — raised above 10 kb default to allow CSV import payloads (Zod caps CSV at 100 k chars).
+- Batch `IdSchema` uses `.max(64).regex(/^[a-zA-Z0-9_-]+$/)` before forwarding to the Anthropic API.
