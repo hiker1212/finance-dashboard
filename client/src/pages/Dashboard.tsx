@@ -4,6 +4,8 @@ import { useApp } from '../context/AppContext'
 import { summaryApi } from '../api/summary'
 import { transactionsApi } from '../api/transactions'
 import { insightsApi } from '../api/insights'
+import { scoreApi } from '../api/score'
+import type { MonthlyScore } from '../api/score'
 import { CategoryBadge } from '../components/CategoryBadge'
 import { SpendingPieChart } from '../components/SpendingPieChart'
 import { MonthlyTrendChart } from '../components/MonthlyTrendChart'
@@ -32,6 +34,9 @@ export function Dashboard() {
   const [insights, setInsights] = useState<string>('')
   const [insightsLoading, setInsightsLoading] = useState(false)
   const [insightsError, setInsightsError] = useState<string>('')
+  const [score, setScore] = useState<MonthlyScore | null>(null)
+  const [scoreLoading, setScoreLoading] = useState(false)
+  const [scoreError, setScoreError] = useState<string>('')
 
   async function handleGenerateInsights() {
     setInsightsLoading(true)
@@ -45,6 +50,19 @@ export function Dashboard() {
       setInsightsError(err instanceof Error ? err.message : 'Failed to generate insights')
     } finally {
       setInsightsLoading(false)
+    }
+  }
+
+  async function handleScoreMonth() {
+    setScoreLoading(true)
+    setScoreError('')
+    setScore(null)
+    try {
+      setScore(await scoreApi.generate(selectedMonth))
+    } catch (err) {
+      setScoreError(err instanceof Error ? err.message : 'Failed to generate score')
+    } finally {
+      setScoreLoading(false)
     }
   }
 
@@ -158,6 +176,93 @@ export function Dashboard() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* Monthly Score */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-700">Monthly Score</h2>
+              <button
+                onClick={handleScoreMonth}
+                disabled={scoreLoading}
+                className="px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              >
+                {scoreLoading ? 'Scoring…' : score ? 'Re-score' : 'Score this month'}
+              </button>
+            </div>
+
+            {scoreError && <p className="text-red-500 text-sm">{scoreError}</p>}
+
+            {scoreLoading && (
+              <p className="text-gray-400 text-sm animate-pulse">Evaluating your financial health…</p>
+            )}
+
+            {score && !scoreLoading && (() => {
+              const gradeColors: Record<string, string> = {
+                A: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+                B: 'bg-blue-100 text-blue-700 border-blue-300',
+                C: 'bg-amber-100 text-amber-700 border-amber-300',
+                D: 'bg-orange-100 text-orange-700 border-orange-300',
+                F: 'bg-red-100 text-red-700 border-red-300',
+              }
+              const riskColors: Record<string, string> = {
+                low: 'bg-emerald-50 text-emerald-700',
+                medium: 'bg-amber-50 text-amber-700',
+                high: 'bg-red-50 text-red-700',
+              }
+              return (
+                <div className="space-y-4">
+                  {/* Score header */}
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-xl border-2 flex items-center justify-center text-2xl font-bold shrink-0 ${gradeColors[score.grade] ?? gradeColors.C}`}>
+                      {score.grade}
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-lg font-bold text-gray-900 tabular-nums">{score.overall_score}/10</span>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${riskColors[score.risk_level]}`}>
+                          {score.risk_level} risk
+                        </span>
+                        <span className="text-xs text-gray-500 tabular-nums">
+                          {score.savings_rate >= 0 ? '+' : ''}{score.savings_rate.toFixed(1)}% savings rate
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 italic">"{score.verdict}"</p>
+                    </div>
+                  </div>
+
+                  {/* Strengths & Warnings */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">Strengths</p>
+                      <ul className="space-y-1.5">
+                        {score.strengths.map((s, i) => (
+                          <li key={i} className="flex gap-2 text-sm text-gray-700">
+                            <span className="text-emerald-500 shrink-0">✓</span>{s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">Warnings</p>
+                      <ul className="space-y-1.5">
+                        {score.warnings.map((w, i) => (
+                          <li key={i} className="flex gap-2 text-sm text-gray-700">
+                            <span className="text-amber-500 shrink-0">⚠</span>{w}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
+
+            {!score && !scoreLoading && !scoreError && (
+              <p className="text-gray-400 text-sm text-center py-4">
+                Click "Score this month" to get a structured AI evaluation with grade, risk level, and specific feedback.
+              </p>
             )}
           </div>
 
