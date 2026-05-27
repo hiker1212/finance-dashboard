@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Client (Vite)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node_modules/.bin/vite",
+      "runtimeArgs": [],
+      "cwd": "${workspaceFolder}/client",
+      "port": 5173
+    },
+    {
+      "name": "Server (tsx)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node_modules/.bin/tsx",
+      "runtimeArgs": ["watch", "src/index.ts"],
+      "cwd": "${workspaceFolder}/server",
+      "envFile": "${workspaceFolder}/server/.env"
+    }
+  ]
+}
