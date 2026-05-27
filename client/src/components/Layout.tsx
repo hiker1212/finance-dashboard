@@ -15,6 +15,7 @@ export function Layout() {
             { to: '/batch', label: 'Batch' },
             { to: '/import', label: 'Import' },
             { to: '/usage', label: 'Usage' },
+            { to: '/analysis', label: 'Analysis' },
           ].map(({ to, label }) => (
             <NavLink
               key={to}
