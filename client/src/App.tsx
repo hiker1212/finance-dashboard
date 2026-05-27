@@ -4,6 +4,7 @@ import { Dashboard } from './pages/Dashboard'
 import { Transactions } from './pages/Transactions'
 import { Budgets } from './pages/Budgets'
 import { Analytics } from './pages/Analytics'
+import { Chat } from './pages/Chat'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="transactions" element={<Transactions />} />
           <Route path="budgets" element={<Budgets />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="chat" element={<Chat />} />
         </Route>
       </Routes>
     </BrowserRouter>

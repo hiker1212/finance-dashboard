@@ -8,6 +8,7 @@ import { budgetsRouter } from './routes/budgets'
 import { summaryRouter } from './routes/summary'
 import { insightsRouter } from './routes/insights'
 import { analyticsRouter } from './routes/analytics'
+import { chatRouter } from './routes/chat'
 import { errorHandler } from './middleware/errorHandler'
 
 export const app = express()
@@ -23,6 +24,7 @@ app.use('/api/budgets', budgetsRouter)
 app.use('/api/summary', summaryRouter)
 app.use('/api/insights', insightsRouter)
 app.use('/api/analytics', analyticsRouter)
+app.use('/api/chat', chatRouter)
 
 // Serve built client in production (STATIC_PATH is set by the Dockerfile)
 const staticPath = process.env.STATIC_PATH
