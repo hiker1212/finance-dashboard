@@ -5,6 +5,7 @@ import { Transactions } from './pages/Transactions'
 import { Budgets } from './pages/Budgets'
 import { Analytics } from './pages/Analytics'
 import { Chat } from './pages/Chat'
+import { BatchScore } from './pages/BatchScore'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="budgets" element={<Budgets />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="chat" element={<Chat />} />
+          <Route path="batch" element={<BatchScore />} />
         </Route>
       </Routes>
     </BrowserRouter>
