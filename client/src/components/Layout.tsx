@@ -14,6 +14,7 @@ export function Layout() {
             { to: '/chat', label: 'Ask AI' },
             { to: '/batch', label: 'Batch' },
             { to: '/import', label: 'Import' },
+            { to: '/usage', label: 'Usage' },
           ].map(({ to, label }) => (
             <NavLink
               key={to}

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
 import rateLimit from 'express-rate-limit'
 import { db } from '../db'
+import { recordUsage } from '../tokenTracker'
 
 export const chatRouter = Router()
 
@@ -182,6 +183,7 @@ Be concise, specific, and format currency as $X,XXX.XX.`
         messages,
       })
 
+      recordUsage('chat', response.usage.input_tokens, response.usage.output_tokens)
       if (response.stop_reason === 'end_turn') {
         const textBlock = response.content.find(b => b.type === 'text')
         const answer = textBlock?.type === 'text' ? textBlock.text : ''

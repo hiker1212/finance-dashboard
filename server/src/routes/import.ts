@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import Anthropic, { toFile } from '@anthropic-ai/sdk'
+import { recordUsage } from '../tokenTracker'
 import rateLimit from 'express-rate-limit'
 
 export const importRouter = Router()
@@ -85,6 +86,7 @@ importRouter.post('/preview', async (req, res, next) => {
       })
 
       const block = response.content.find(b => b.type === 'tool_use')
+      recordUsage('import', response.usage.input_tokens, response.usage.output_tokens)
       if (!block || block.type !== 'tool_use') throw new Error('No extraction block returned')
       extracted = block.input as Record<string, unknown>
     } finally {

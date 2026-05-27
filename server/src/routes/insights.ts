@@ -3,6 +3,7 @@ import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
 import rateLimit from 'express-rate-limit'
 import { db } from '../db'
+import { recordUsage } from '../tokenTracker'
 
 export const insightsRouter = Router()
 
@@ -85,6 +86,7 @@ insightsRouter.post('/', async (req, res, next) => {
     const message = await client.messages.create(
       MESSAGE_PARAMS(`Here is my financial data for ${month}:\n\n${JSON.stringify(summary, null, 2)}`)
     )
+    recordUsage('insights', message.usage.input_tokens, message.usage.output_tokens)
     const block = message.content[0]
     res.json({ insights: block.type === 'text' ? block.text : '' })
   } catch (err) {
@@ -116,7 +118,8 @@ insightsRouter.post('/stream', async (req, res, next) => {
       res.end()
     })
 
-    stream.on('finalMessage', () => {
+    stream.on('finalMessage', (message) => {
+      recordUsage('insights_stream', message.usage.input_tokens, message.usage.output_tokens)
       res.write('data: [DONE]\n\n')
       res.end()
     })

@@ -7,6 +7,7 @@ import { Analytics } from './pages/Analytics'
 import { Chat } from './pages/Chat'
 import { BatchScore } from './pages/BatchScore'
 import { Import } from './pages/Import'
+import { Usage } from './pages/Usage'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="chat" element={<Chat />} />
           <Route path="batch" element={<BatchScore />} />
           <Route path="import" element={<Import />} />
+          <Route path="usage" element={<Usage />} />
         </Route>
       </Routes>
     </BrowserRouter>
