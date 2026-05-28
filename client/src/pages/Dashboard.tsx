@@ -106,18 +106,18 @@ export function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-zinc-100">Dashboard</h1>
         <div className="flex items-center gap-2">
           <input
             type="month" value={selectedMonth}
             onChange={e => setSelectedMonth(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="bg-zinc-700 border border-zinc-600 text-zinc-100 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <button
             onClick={handleExportPdf}
             disabled={exporting || !summary}
             title="Export PDF report"
-            className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            className="px-3 py-1.5 text-sm font-medium border border-zinc-600 text-zinc-300 rounded-lg hover:bg-zinc-700 disabled:opacity-40 transition-colors"
           >
             ⬇ PDF
           </button>
@@ -125,18 +125,18 @@ export function Dashboard() {
       </div>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Loading…</p>
+        <p className="text-zinc-500 text-sm">Loading…</p>
       ) : (
         <>
           {/* KPI cards */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'Income', value: summary?.total_income ?? 0, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-              { label: 'Expenses', value: summary?.total_expenses ?? 0, color: 'text-red-500', bg: 'bg-red-50' },
-              { label: 'Net savings', value: net, color: net >= 0 ? 'text-emerald-600' : 'text-red-500', bg: net >= 0 ? 'bg-emerald-50' : 'bg-red-50' },
+              { label: 'Income', value: summary?.total_income ?? 0, color: 'text-emerald-400', bg: 'bg-emerald-950/40' },
+              { label: 'Expenses', value: summary?.total_expenses ?? 0, color: 'text-red-400', bg: 'bg-red-950/40' },
+              { label: 'Net savings', value: net, color: net >= 0 ? 'text-emerald-400' : 'text-red-400', bg: net >= 0 ? 'bg-emerald-950/40' : 'bg-red-950/40' },
             ].map(({ label, value, color, bg }) => (
               <div key={label} className={`rounded-xl p-5 ${bg}`}>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{label}</p>
+                <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-1">{label}</p>
                 <p className={`text-2xl font-bold tabular-nums ${color}`}>${value.toFixed(2)}</p>
               </div>
             ))}
@@ -149,28 +149,28 @@ export function Dashboard() {
           </div>
 
           {/* Recent transactions */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-zinc-800 rounded-xl border border-zinc-700 p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-700">Recent transactions</h2>
-              <Link to="/transactions" className="text-xs text-indigo-600 hover:underline">View all →</Link>
+              <h2 className="text-sm font-semibold text-zinc-300">Recent transactions</h2>
+              <Link to="/transactions" className="text-xs text-indigo-400 hover:underline">View all →</Link>
             </div>
             {recent.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-6">
+              <p className="text-zinc-500 text-sm text-center py-6">
                 No transactions this month.{' '}
-                <Link to="/transactions" className="text-indigo-600 hover:underline">Add one</Link>
+                <Link to="/transactions" className="text-indigo-400 hover:underline">Add one</Link>
               </p>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-zinc-700">
                 {recent.map(t => (
                   <div key={t.id} className="flex items-center gap-3 py-2.5">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{t.description}</p>
-                      <p className="text-xs text-gray-400">{t.date}</p>
+                      <p className="text-sm font-medium text-zinc-100 truncate">{t.description}</p>
+                      <p className="text-xs text-zinc-500">{t.date}</p>
                     </div>
                     {t.category_name && (
                       <CategoryBadge name={t.category_name} color={t.category_color ?? '#6366f1'} />
                     )}
-                    <span className={`text-sm font-semibold tabular-nums shrink-0 ${t.type === 'income' ? 'text-emerald-600' : 'text-red-500'}`}>
+                    <span className={`text-sm font-semibold tabular-nums shrink-0 ${t.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>
                       {t.type === 'income' ? '+' : '-'}${t.amount.toFixed(2)}
                     </span>
                   </div>
@@ -180,9 +180,9 @@ export function Dashboard() {
           </div>
 
           {/* Monthly Score */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-zinc-800 rounded-xl border border-zinc-700 p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-700">Monthly Score</h2>
+              <h2 className="text-sm font-semibold text-zinc-300">Monthly Score</h2>
               <button
                 onClick={handleScoreMonth}
                 disabled={scoreLoading}
@@ -192,24 +192,24 @@ export function Dashboard() {
               </button>
             </div>
 
-            {scoreError && <p className="text-red-500 text-sm">{scoreError}</p>}
+            {scoreError && <p className="text-red-400 text-sm">{scoreError}</p>}
 
             {scoreLoading && (
-              <p className="text-gray-400 text-sm animate-pulse">Evaluating your financial health…</p>
+              <p className="text-zinc-500 text-sm animate-pulse">Evaluating your financial health…</p>
             )}
 
             {score && !scoreLoading && (() => {
               const gradeColors: Record<string, string> = {
-                A: 'bg-emerald-100 text-emerald-700 border-emerald-300',
-                B: 'bg-blue-100 text-blue-700 border-blue-300',
-                C: 'bg-amber-100 text-amber-700 border-amber-300',
-                D: 'bg-orange-100 text-orange-700 border-orange-300',
-                F: 'bg-red-100 text-red-700 border-red-300',
+                A: 'bg-emerald-900/50 text-emerald-400 border-emerald-700',
+                B: 'bg-blue-900/50 text-blue-400 border-blue-700',
+                C: 'bg-amber-900/50 text-amber-400 border-amber-700',
+                D: 'bg-orange-900/50 text-orange-400 border-orange-700',
+                F: 'bg-red-900/50 text-red-400 border-red-700',
               }
               const riskColors: Record<string, string> = {
-                low: 'bg-emerald-50 text-emerald-700',
-                medium: 'bg-amber-50 text-amber-700',
-                high: 'bg-red-50 text-red-700',
+                low: 'bg-emerald-950/40 text-emerald-400',
+                medium: 'bg-amber-950/40 text-amber-400',
+                high: 'bg-red-950/40 text-red-400',
               }
               return (
                 <div className="space-y-4">
@@ -220,35 +220,35 @@ export function Dashboard() {
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-lg font-bold text-gray-900 tabular-nums">{score.overall_score}/10</span>
+                        <span className="text-lg font-bold text-zinc-100 tabular-nums">{score.overall_score}/10</span>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${riskColors[score.risk_level]}`}>
                           {score.risk_level} risk
                         </span>
-                        <span className="text-xs text-gray-500 tabular-nums">
+                        <span className="text-xs text-zinc-500 tabular-nums">
                           {score.savings_rate >= 0 ? '+' : ''}{score.savings_rate.toFixed(1)}% savings rate
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 italic">"{score.verdict}"</p>
+                      <p className="text-sm text-zinc-400 italic">"{score.verdict}"</p>
                     </div>
                   </div>
 
                   {/* Strengths & Warnings */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">Strengths</p>
+                      <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wide mb-2">Strengths</p>
                       <ul className="space-y-1.5">
                         {score.strengths.map((s, i) => (
-                          <li key={i} className="flex gap-2 text-sm text-gray-700">
+                          <li key={i} className="flex gap-2 text-sm text-zinc-300">
                             <span className="text-emerald-500 shrink-0">✓</span>{s}
                           </li>
                         ))}
                       </ul>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">Warnings</p>
+                      <p className="text-xs font-semibold text-amber-400 uppercase tracking-wide mb-2">Warnings</p>
                       <ul className="space-y-1.5">
                         {score.warnings.map((w, i) => (
-                          <li key={i} className="flex gap-2 text-sm text-gray-700">
+                          <li key={i} className="flex gap-2 text-sm text-zinc-300">
                             <span className="text-amber-500 shrink-0">⚠</span>{w}
                           </li>
                         ))}
@@ -260,16 +260,16 @@ export function Dashboard() {
             })()}
 
             {!score && !scoreLoading && !scoreError && (
-              <p className="text-gray-400 text-sm text-center py-4">
+              <p className="text-zinc-500 text-sm text-center py-4">
                 Click "Score this month" to get a structured AI evaluation with grade, risk level, and specific feedback.
               </p>
             )}
           </div>
 
           {/* AI Insights */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-zinc-800 rounded-xl border border-zinc-700 p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-700">AI Spending Insights</h2>
+              <h2 className="text-sm font-semibold text-zinc-300">AI Spending Insights</h2>
               <button
                 onClick={handleGenerateInsights}
                 disabled={insightsLoading}
@@ -279,16 +279,16 @@ export function Dashboard() {
               </button>
             </div>
             {insightsError && (
-              <p className="text-red-500 text-sm">{insightsError}</p>
+              <p className="text-red-400 text-sm">{insightsError}</p>
             )}
             {insightsLoading && (
-              <p className="text-gray-400 text-sm animate-pulse">Analyzing your spending data…</p>
+              <p className="text-zinc-500 text-sm animate-pulse">Analyzing your spending data…</p>
             )}
             {!insightsLoading && !insightsError && insights && (
-              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{insights}</p>
+              <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{insights}</p>
             )}
             {!insightsLoading && !insightsError && !insights && (
-              <p className="text-gray-400 text-sm text-center py-4">
+              <p className="text-zinc-500 text-sm text-center py-4">
                 Click "Generate insights" to get AI-powered analysis of your spending this month.
               </p>
             )}

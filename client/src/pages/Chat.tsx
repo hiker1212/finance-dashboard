@@ -27,9 +27,9 @@ function ToolCallBadge({ toolCall }: Props) {
     .map(([k, v]) => `${k}: ${v}`)
     .join(', ')
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-700 rounded-full px-2.5 py-1 border border-indigo-100">
+    <span className="inline-flex items-center gap-1.5 text-xs bg-indigo-900/40 text-indigo-300 rounded-full px-2.5 py-1 border border-indigo-800">
       <span className="font-medium">{label}</span>
-      {detail && <span className="text-indigo-400">({detail})</span>}
+      {detail && <span className="text-indigo-500">({detail})</span>}
     </span>
   )
 }
@@ -63,8 +63,8 @@ export function Chat() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Ask your finances</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-zinc-100">Ask your finances</h1>
+        <p className="text-sm text-zinc-500 mt-1">
           Claude queries your data autonomously to answer questions.
         </p>
       </div>
@@ -77,7 +77,7 @@ export function Chat() {
           onChange={e => setQuestion(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleAsk(question)}
           placeholder="e.g. Which category am I overspending on?"
-          className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 bg-zinc-700 border border-zinc-600 text-zinc-100 placeholder-zinc-500 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <button
           onClick={() => handleAsk(question)}
@@ -91,13 +91,13 @@ export function Chat() {
       {/* Example questions */}
       {!answer && !loading && (
         <div>
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Try asking</p>
+          <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2">Try asking</p>
           <div className="flex flex-wrap gap-2">
             {EXAMPLES.map(ex => (
               <button
                 key={ex}
                 onClick={() => handleAsk(ex)}
-                className="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-full border border-zinc-600 text-zinc-400 hover:border-indigo-500 hover:text-indigo-400 transition-colors"
               >
                 {ex}
               </button>
@@ -108,20 +108,20 @@ export function Chat() {
 
       {/* Loading */}
       {loading && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-sm text-gray-400 animate-pulse">Querying your finances…</p>
+        <div className="bg-zinc-800 rounded-xl border border-zinc-700 p-5">
+          <p className="text-sm text-zinc-500 animate-pulse">Querying your finances…</p>
         </div>
       )}
 
       {/* Error */}
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-red-400 text-sm">{error}</p>}
 
       {/* Answer */}
       {answer && !loading && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <div className="bg-zinc-800 rounded-xl border border-zinc-700 p-5 space-y-4">
           {toolCalls.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2">
                 Tools used ({toolCalls.length})
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -131,7 +131,7 @@ export function Chat() {
               </div>
             </div>
           )}
-          <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{answer}</p>
+          <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{answer}</p>
         </div>
       )}
     </div>

@@ -10,19 +10,19 @@ interface Props {
 export function TransactionList({ transactions, onEdit, onDelete }: Props) {
   if (transactions.length === 0) {
     return (
-      <p className="text-gray-400 text-center py-16 text-sm">
+      <p className="text-zinc-500 text-center py-16 text-sm">
         No transactions yet — add one above.
       </p>
     )
   }
 
   return (
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-zinc-700">
       {transactions.map(t => (
         <div key={t.id} className="flex items-center gap-3 py-3">
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-gray-900 text-sm truncate">{t.description}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{t.date}</p>
+            <p className="font-medium text-zinc-100 text-sm truncate">{t.description}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{t.date}</p>
           </div>
 
           {t.category_name && (
@@ -31,7 +31,7 @@ export function TransactionList({ transactions, onEdit, onDelete }: Props) {
 
           <span
             className={`font-semibold tabular-nums text-sm shrink-0 ${
-              t.type === 'income' ? 'text-emerald-600' : 'text-red-500'
+              t.type === 'income' ? 'text-emerald-400' : 'text-red-400'
             }`}
           >
             {t.type === 'income' ? '+' : '-'}${t.amount.toFixed(2)}
@@ -40,13 +40,13 @@ export function TransactionList({ transactions, onEdit, onDelete }: Props) {
           <div className="flex gap-2 shrink-0">
             <button
               onClick={() => onEdit(t)}
-              className="text-xs text-gray-400 hover:text-indigo-600 transition-colors"
+              className="text-xs text-zinc-500 hover:text-indigo-400 transition-colors"
             >
               Edit
             </button>
             <button
               onClick={() => onDelete(t.id)}
-              className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+              className="text-xs text-zinc-500 hover:text-red-400 transition-colors"
             >
               Delete
             </button>

@@ -41,13 +41,13 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
     }
   }
 
-  const inputCls = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+  const inputCls = 'w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="tx-amount" className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+          <label htmlFor="tx-amount" className="block text-sm font-medium text-zinc-300 mb-1">Amount ($)</label>
           <input
             id="tx-amount" type="number" step="0.01" min="0.01"
             value={amount} onChange={e => setAmount(e.target.value)}
@@ -55,7 +55,7 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
           />
         </div>
         <div>
-          <label htmlFor="tx-type" className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <label htmlFor="tx-type" className="block text-sm font-medium text-zinc-300 mb-1">Type</label>
           <select id="tx-type" value={type} onChange={e => setType(e.target.value as 'income' | 'expense')} className={inputCls}>
             <option value="expense">Expense</option>
             <option value="income">Income</option>
@@ -64,7 +64,7 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
       </div>
 
       <div>
-        <label htmlFor="tx-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label htmlFor="tx-description" className="block text-sm font-medium text-zinc-300 mb-1">Description</label>
         <input
           id="tx-description" type="text" value={description} onChange={e => setDescription(e.target.value)}
           className={inputCls} required placeholder="e.g. Grocery run"
@@ -73,7 +73,7 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="tx-category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <label htmlFor="tx-category" className="block text-sm font-medium text-zinc-300 mb-1">Category</label>
           <select id="tx-category" value={categoryId} onChange={e => setCategoryId(e.target.value)} className={inputCls}>
             <option value="">Uncategorized</option>
             {categories.map(c => (
@@ -82,7 +82,7 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
           </select>
         </div>
         <div>
-          <label htmlFor="tx-date" className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <label htmlFor="tx-date" className="block text-sm font-medium text-zinc-300 mb-1">Date</label>
           <input
             id="tx-date" type="date" value={date} onChange={e => setDate(e.target.value)}
             className={inputCls} required
@@ -90,10 +90,10 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
         </div>
       </div>
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-red-400 text-sm">{error}</p>}
 
       <div className="flex gap-3 justify-end pt-1">
-        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">
+        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-100">
           Cancel
         </button>
         <button
