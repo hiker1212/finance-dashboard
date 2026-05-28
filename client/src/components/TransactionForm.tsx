@@ -7,9 +7,10 @@ interface Props {
   initial?: Transaction | null
   onSubmit: (data: TransactionPayload) => Promise<void>
   onCancel: () => void
+  onCreateCategory?: (data: { name: string; color: string }) => Promise<Category>
 }
 
-export function TransactionForm({ categories, initial, onSubmit, onCancel }: Props) {
+export function TransactionForm({ categories, initial, onSubmit, onCancel, onCreateCategory }: Props) {
   const [amount, setAmount] = useState(initial?.amount.toString() ?? '')
   const [type, setType] = useState<'income' | 'expense'>(initial?.type ?? 'expense')
   const [description, setDescription] = useState(initial?.description ?? '')
@@ -17,6 +18,11 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
   const [date, setDate] = useState(initial?.date ?? new Date().toISOString().slice(0, 10))
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const [showNewCat, setShowNewCat] = useState(false)
+  const [newCatName, setNewCatName] = useState('')
+  const [newCatColor, setNewCatColor] = useState('#6366f1')
+  const [newCatSaving, setNewCatSaving] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -41,13 +47,27 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
     }
   }
 
-  const inputCls = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+  async function handleAddCategory() {
+    if (!onCreateCategory || !newCatName.trim()) return
+    setNewCatSaving(true)
+    try {
+      const cat = await onCreateCategory({ name: newCatName.trim(), color: newCatColor })
+      setCategoryId(String(cat.id))
+      setNewCatName('')
+      setNewCatColor('#6366f1')
+      setShowNewCat(false)
+    } finally {
+      setNewCatSaving(false)
+    }
+  }
+
+  const inputCls = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 dark:placeholder-zinc-400'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="tx-amount" className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+          <label htmlFor="tx-amount" className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Amount ($)</label>
           <input
             id="tx-amount" type="number" step="0.01" min="0.01"
             value={amount} onChange={e => setAmount(e.target.value)}
@@ -55,7 +75,7 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
           />
         </div>
         <div>
-          <label htmlFor="tx-type" className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <label htmlFor="tx-type" className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Type</label>
           <select id="tx-type" value={type} onChange={e => setType(e.target.value as 'income' | 'expense')} className={inputCls}>
             <option value="expense">Expense</option>
             <option value="income">Income</option>
@@ -64,7 +84,7 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
       </div>
 
       <div>
-        <label htmlFor="tx-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label htmlFor="tx-description" className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Description</label>
         <input
           id="tx-description" type="text" value={description} onChange={e => setDescription(e.target.value)}
           className={inputCls} required placeholder="e.g. Grocery run"
@@ -73,16 +93,60 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="tx-category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="tx-category" className="text-sm font-medium text-gray-700 dark:text-zinc-300">Category</label>
+            {onCreateCategory && !showNewCat && (
+              <button
+                type="button"
+                onClick={() => setShowNewCat(true)}
+                className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+              >
+                + New
+              </button>
+            )}
+          </div>
           <select id="tx-category" value={categoryId} onChange={e => setCategoryId(e.target.value)} className={inputCls}>
             <option value="">Uncategorized</option>
             {categories.map(c => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
+          {showNewCat && (
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="text"
+                value={newCatName}
+                onChange={e => setNewCatName(e.target.value)}
+                placeholder="Category name"
+                className="flex-1 bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 dark:placeholder-zinc-400"
+                autoFocus
+              />
+              <input
+                type="color"
+                value={newCatColor}
+                onChange={e => setNewCatColor(e.target.value)}
+                className="h-8 w-10 rounded border border-gray-300 dark:border-zinc-500 cursor-pointer bg-white dark:bg-zinc-600"
+              />
+              <button
+                type="button"
+                onClick={handleAddCategory}
+                disabled={newCatSaving || !newCatName.trim()}
+                className="px-2.5 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              >
+                {newCatSaving ? '…' : 'Add'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowNewCat(false); setNewCatName(''); setNewCatColor('#6366f1') }}
+                className="text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300 text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+          )}
         </div>
         <div>
-          <label htmlFor="tx-date" className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <label htmlFor="tx-date" className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Date</label>
           <input
             id="tx-date" type="date" value={date} onChange={e => setDate(e.target.value)}
             className={inputCls} required
@@ -90,10 +154,10 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel }: Pro
         </div>
       </div>
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>}
 
       <div className="flex gap-3 justify-end pt-1">
-        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">
+        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-100">
           Cancel
         </button>
         <button
