@@ -4,17 +4,17 @@ import type { BatchCreated, BatchStatus, BatchResult } from '../api/batch'
 import type { MonthlyScore } from '../api/score'
 
 const GRADE_COLORS: Record<string, string> = {
-  A: 'bg-emerald-900/50 text-emerald-400 border-emerald-700',
-  B: 'bg-blue-900/50 text-blue-400 border-blue-700',
-  C: 'bg-amber-900/50 text-amber-400 border-amber-700',
-  D: 'bg-orange-900/50 text-orange-400 border-orange-700',
-  F: 'bg-red-900/50 text-red-400 border-red-700',
+  A: 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-400 dark:border-emerald-700',
+  B: 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/50 dark:text-blue-400 dark:border-blue-700',
+  C: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700',
+  D: 'bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900/50 dark:text-orange-400 dark:border-orange-700',
+  F: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/50 dark:text-red-400 dark:border-red-700',
 }
 
 const RISK_COLORS: Record<string, string> = {
-  low: 'text-emerald-400',
-  medium: 'text-amber-400',
-  high: 'text-red-400',
+  low: 'text-emerald-600 dark:text-emerald-400',
+  medium: 'text-amber-600 dark:text-amber-400',
+  high: 'text-red-500 dark:text-red-400',
 }
 
 interface ScoreCardProps {
@@ -25,35 +25,35 @@ function ScoreCard({ result }: ScoreCardProps) {
   const score = result.score as MonthlyScore | null
   if (result.error || !score) {
     return (
-      <div className="bg-zinc-800 rounded-xl border border-red-900 p-4">
-        <p className="text-sm font-semibold text-zinc-300 mb-1">{result.month}</p>
-        <p className="text-xs text-red-400">{result.error ?? 'No data'}</p>
+      <div className="bg-white border border-red-200 dark:bg-zinc-700 dark:border-red-900 rounded-xl p-4">
+        <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-1">{result.month}</p>
+        <p className="text-xs text-red-500 dark:text-red-400">{result.error ?? 'No data'}</p>
       </div>
     )
   }
   return (
-    <div className="bg-zinc-800 rounded-xl border border-zinc-700 p-4 space-y-3">
+    <div className="bg-white border border-gray-200 dark:bg-zinc-700 dark:border-zinc-600 rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center text-lg font-bold shrink-0 ${GRADE_COLORS[score.grade] ?? GRADE_COLORS.C}`}>
           {score.grade}
         </div>
         <div>
-          <p className="text-sm font-semibold text-zinc-100">{result.month}</p>
-          <p className="text-xs text-zinc-500 tabular-nums">
+          <p className="text-sm font-semibold text-gray-900 dark:text-zinc-100">{result.month}</p>
+          <p className="text-xs text-gray-500 dark:text-zinc-400 tabular-nums">
             {score.overall_score}/10 · <span className={RISK_COLORS[score.risk_level]}>{score.risk_level} risk</span> · {score.savings_rate >= 0 ? '+' : ''}{score.savings_rate.toFixed(1)}% saved
           </p>
         </div>
       </div>
-      <p className="text-xs text-zinc-500 italic leading-relaxed">"{score.verdict}"</p>
+      <p className="text-xs text-gray-500 dark:text-zinc-400 italic leading-relaxed">"{score.verdict}"</p>
       <div className="space-y-1">
         {score.strengths.map((s, i) => (
-          <p key={i} className="text-xs text-zinc-400 flex gap-1.5">
-            <span className="text-emerald-400 shrink-0">✓</span>{s}
+          <p key={i} className="text-xs text-gray-700 dark:text-zinc-300 flex gap-1.5">
+            <span className="text-emerald-500 shrink-0">✓</span>{s}
           </p>
         ))}
         {score.warnings.map((w, i) => (
-          <p key={i} className="text-xs text-zinc-400 flex gap-1.5">
-            <span className="text-amber-400 shrink-0">⚠</span>{w}
+          <p key={i} className="text-xs text-gray-700 dark:text-zinc-300 flex gap-1.5">
+            <span className="text-amber-500 shrink-0">⚠</span>{w}
           </p>
         ))}
       </div>
@@ -114,16 +114,16 @@ export function BatchScore() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-zinc-100">Batch Score</h1>
-        <p className="text-sm text-zinc-500 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Batch Score</h1>
+        <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
           Score every month at once using the Batch API — 50% cheaper, processed asynchronously.
         </p>
       </div>
 
       {/* Info banner */}
-      <div className="bg-indigo-950/40 border border-indigo-800 rounded-xl p-4 text-sm text-indigo-300 space-y-1">
+      <div className="bg-indigo-50 border border-indigo-100 text-indigo-800 dark:bg-indigo-950/40 dark:border-indigo-800 dark:text-indigo-300 rounded-xl p-4 text-sm space-y-1">
         <p className="font-medium">How batch differs from single requests</p>
-        <ul className="text-xs space-y-0.5 text-indigo-400 list-disc list-inside">
+        <ul className="text-xs space-y-0.5 list-disc list-inside text-indigo-700 dark:text-indigo-400">
           <li>All months submitted in one API call — one <code>batch_id</code> covers them all</li>
           <li>50% cost reduction vs standard API</li>
           <li>Processing is async — results arrive in minutes, not seconds</li>
@@ -139,19 +139,19 @@ export function BatchScore() {
         {creating ? 'Submitting…' : batch && status?.processing_status !== 'ended' ? 'Batch in progress…' : 'Score all months'}
       </button>
 
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>}
 
       {/* Batch metadata */}
       {batch && (
-        <div className="bg-zinc-800/60 rounded-xl border border-zinc-700 p-4 font-mono text-xs space-y-1 text-zinc-400">
-          <p><span className="text-zinc-500">batch_id</span>         {batch.batch_id}</p>
-          <p><span className="text-zinc-500">request_count</span>    {batch.request_count} ({batch.months.join(', ')})</p>
-          <p><span className="text-zinc-500">created_at</span>       {batch.created_at}</p>
-          <p><span className="text-zinc-500">expires_at</span>       {batch.expires_at}</p>
+        <div className="bg-gray-50 border border-gray-200 dark:bg-zinc-700/50 dark:border-zinc-600 rounded-xl p-4 font-mono text-xs space-y-1 text-gray-600 dark:text-zinc-400">
+          <p><span className="text-gray-400 dark:text-zinc-500">batch_id</span>         {batch.batch_id}</p>
+          <p><span className="text-gray-400 dark:text-zinc-500">request_count</span>    {batch.request_count} ({batch.months.join(', ')})</p>
+          <p><span className="text-gray-400 dark:text-zinc-500">created_at</span>       {batch.created_at}</p>
+          <p><span className="text-gray-400 dark:text-zinc-500">expires_at</span>       {batch.expires_at}</p>
           {status && (
             <>
-              <p><span className="text-zinc-500">processing_status</span> {status.processing_status}</p>
-              <p><span className="text-zinc-500">progress</span>          {done}/{total} requests complete</p>
+              <p><span className="text-gray-400 dark:text-zinc-500">processing_status</span> {status.processing_status}</p>
+              <p><span className="text-gray-400 dark:text-zinc-500">progress</span>          {done}/{total} requests complete</p>
             </>
           )}
         </div>
@@ -159,19 +159,19 @@ export function BatchScore() {
 
       {/* Progress */}
       {status && status.processing_status !== 'ended' && (
-        <div className="bg-zinc-800 rounded-xl border border-zinc-700 p-5">
+        <div className="bg-white border border-gray-200 dark:bg-zinc-700 dark:border-zinc-600 rounded-xl p-5">
           <div className="flex items-center gap-3">
             <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-zinc-400">Processing {batch?.request_count} requests… ({done}/{total} done)</p>
+            <p className="text-sm text-gray-600 dark:text-zinc-400">Processing {batch?.request_count} requests… ({done}/{total} done)</p>
           </div>
-          <p className="text-xs text-zinc-500 mt-2">Polling every 5 seconds. Batch API typically completes in 1–5 minutes.</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 mt-2">Polling every 5 seconds. Batch API typically completes in 1–5 minutes.</p>
         </div>
       )}
 
       {/* Results */}
       {results && (
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-zinc-300">
+          <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
             Results — {results.length} months scored
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

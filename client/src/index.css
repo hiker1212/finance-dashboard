@@ -1,14 +1,10 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-:root {
+html {
+  color-scheme: light;
+}
+
+html.dark {
   color-scheme: dark;
-}
-
-body {
-  background-color: #18181b;
-}
-
-.chart-glow {
-  filter: drop-shadow(0 0 18px rgba(99, 102, 241, 0.35))
-          drop-shadow(0 0 6px rgba(99, 102, 241, 0.2));
 }

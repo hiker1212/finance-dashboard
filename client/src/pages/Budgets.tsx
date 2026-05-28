@@ -66,9 +66,8 @@ export function Budgets() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-zinc-100">Budgets</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Budgets</h1>
 
-      {/* Active budgets */}
       {budgets.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {budgets.map(b => (
@@ -87,19 +86,18 @@ export function Budgets() {
           ))}
         </div>
       ) : (
-        <p className="text-zinc-500 text-sm">No budgets set yet.</p>
+        <p className="text-gray-400 dark:text-zinc-500 text-sm">No budgets set yet.</p>
       )}
 
-      {/* Set budget for unbudgeted categories */}
       {unbudgeted.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold text-zinc-300 mb-3">Set a budget for…</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3">Set a budget for…</h2>
           <div className="flex flex-wrap gap-2">
             {unbudgeted.map(c => (
               <button
                 key={c.id}
                 onClick={() => { setEditingBudget({ categoryId: c.id, name: c.name }); setLimitInput('') }}
-                className="text-xs px-3 py-1.5 rounded-full border border-zinc-600 text-zinc-400 hover:border-indigo-400 hover:text-indigo-400 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:border-indigo-400 hover:text-indigo-600 dark:border-zinc-600 dark:text-zinc-400 dark:hover:border-indigo-400 dark:hover:text-indigo-400 transition-colors"
                 style={{ borderLeftColor: c.color, borderLeftWidth: 3 }}
               >
                 {c.name}
@@ -110,19 +108,19 @@ export function Budgets() {
       )}
 
       {/* Add category */}
-      <div className="bg-zinc-800 rounded-xl border border-zinc-700 p-5">
-        <h2 className="text-sm font-semibold text-zinc-300 mb-3">Add category</h2>
+      <div className="bg-white border border-gray-200 dark:bg-zinc-700 dark:border-zinc-600 rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3">Add category</h2>
         <form onSubmit={handleAddCategory} className="flex gap-3 items-end">
           <div className="flex-1">
             <input
               type="text" value={newCatName} onChange={e => setNewCatName(e.target.value)}
               placeholder="Category name" required
-              className="w-full bg-zinc-700 border border-zinc-600 text-zinc-100 placeholder-zinc-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full bg-white border border-gray-300 text-gray-900 placeholder-gray-400 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 dark:placeholder-zinc-400 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <input
             type="color" value={newCatColor} onChange={e => setNewCatColor(e.target.value)}
-            className="h-9 w-12 rounded-lg border border-zinc-600 cursor-pointer bg-zinc-700"
+            className="h-9 w-12 rounded-lg border border-gray-300 dark:border-zinc-500 cursor-pointer bg-white dark:bg-zinc-600"
           />
           <button
             type="submit" disabled={saving}
@@ -133,21 +131,20 @@ export function Budgets() {
         </form>
       </div>
 
-      {/* Set/edit budget modal */}
       {editingBudget && (
         <Modal title={`Budget for ${editingBudget.name}`} onClose={() => setEditingBudget(null)}>
           <form onSubmit={handleSaveBudget} className="space-y-4">
             <div>
-              <label htmlFor="budget-limit" className="block text-sm font-medium text-zinc-300 mb-1">Monthly limit ($)</label>
+              <label htmlFor="budget-limit" className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Monthly limit ($)</label>
               <input
                 id="budget-limit" type="number" step="0.01" min="0.01"
                 value={limitInput} onChange={e => setLimitInput(e.target.value)}
-                className="w-full bg-zinc-700 border border-zinc-600 text-zinc-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-white border border-gray-300 text-gray-900 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required autoFocus
               />
             </div>
             <div className="flex gap-3 justify-end">
-              <button type="button" onClick={() => setEditingBudget(null)} className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-100">Cancel</button>
+              <button type="button" onClick={() => setEditingBudget(null)} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-100">Cancel</button>
               <button type="submit" disabled={saving} className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50">
                 {saving ? 'Saving…' : 'Save'}
               </button>

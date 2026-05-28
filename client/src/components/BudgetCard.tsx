@@ -15,34 +15,34 @@ export function BudgetCard({ categoryName, categoryColor, spent, limit, onEdit, 
   const barColor = isOver ? 'bg-red-500' : isNear ? 'bg-amber-400' : 'bg-emerald-500'
 
   return (
-    <div className="bg-zinc-800 rounded-xl border border-zinc-700 p-4 space-y-3">
+    <div className="bg-white border border-gray-200 dark:bg-zinc-700 dark:border-zinc-600 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: categoryColor }} />
-          <span className="font-medium text-zinc-100 text-sm">{categoryName}</span>
+          <span className="font-medium text-gray-900 dark:text-zinc-100 text-sm">{categoryName}</span>
           {isOver && (
-            <span className="text-xs font-medium text-red-400 bg-red-950/40 px-1.5 py-0.5 rounded-full">
+            <span className="text-xs font-medium text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950/40 px-1.5 py-0.5 rounded-full">
               Over budget
             </span>
           )}
           {isNear && !isOver && (
-            <span className="text-xs font-medium text-amber-400 bg-amber-950/40 px-1.5 py-0.5 rounded-full">
+            <span className="text-xs font-medium text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/40 px-1.5 py-0.5 rounded-full">
               Near limit
             </span>
           )}
         </div>
         <div className="flex gap-2">
-          <button onClick={onEdit} className="text-xs text-zinc-500 hover:text-indigo-400 transition-colors">Edit</button>
-          <button onClick={onRemove} className="text-xs text-zinc-500 hover:text-red-400 transition-colors">Remove</button>
+          <button onClick={onEdit} className="text-xs text-gray-400 hover:text-indigo-600 dark:text-zinc-500 dark:hover:text-indigo-400 transition-colors">Edit</button>
+          <button onClick={onRemove} className="text-xs text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors">Remove</button>
         </div>
       </div>
 
-      <div className="w-full bg-zinc-700 rounded-full h-1.5">
+      <div className="w-full bg-gray-200 dark:bg-zinc-600 rounded-full h-1.5">
         <div className={`h-1.5 rounded-full transition-all duration-300 ${barColor}`} style={{ width: `${pct}%` }} />
       </div>
 
-      <div className="flex justify-between text-xs text-zinc-500">
-        <span className={isOver ? 'text-red-400 font-semibold' : ''}>${spent.toFixed(2)} spent</span>
+      <div className="flex justify-between text-xs text-gray-500 dark:text-zinc-400">
+        <span className={isOver ? 'text-red-600 dark:text-red-400 font-semibold' : ''}>${spent.toFixed(2)} spent</span>
         <span>${limit.toFixed(2)} / month</span>
       </div>
     </div>
