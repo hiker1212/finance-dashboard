@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../context/AppContext'
 import { transactionsApi } from '../api/transactions'
+import { categoriesApi } from '../api/categories'
 import { summaryApi } from '../api/summary'
 import { TransactionList } from '../components/TransactionList'
 import { TransactionForm } from '../components/TransactionForm'
@@ -8,7 +9,7 @@ import { Modal } from '../components/Modal'
 import type { Transaction, MonthlySummary } from '../types'
 
 export function Transactions() {
-  const { categories, selectedMonth, setSelectedMonth } = useApp()
+  const { categories, selectedMonth, setSelectedMonth, refreshCategories } = useApp()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [summary, setSummary] = useState<MonthlySummary | null>(null)
   const [loading, setLoading] = useState(true)
@@ -60,6 +61,12 @@ export function Transactions() {
     }
     setEditing(undefined)
     load()
+  }
+
+  async function handleCreateCategory(data: { name: string; color: string }) {
+    const cat = await categoriesApi.create(data)
+    refreshCategories()
+    return cat
   }
 
   async function handleDelete(id: number) {
@@ -149,6 +156,7 @@ export function Transactions() {
             initial={editing}
             onSubmit={handleSubmit}
             onCancel={() => setEditing(undefined)}
+            onCreateCategory={handleCreateCategory}
           />
         </Modal>
       )}
