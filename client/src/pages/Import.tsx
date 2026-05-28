@@ -19,8 +19,8 @@ const SAMPLE_CSV = `Date,Description,Amount,Type
 2026-05-25,Cinema Tickets,28.00,debit`.trim()
 
 const TYPE_STYLES: Record<string, string> = {
-  income: 'text-emerald-600',
-  expense: 'text-red-500',
+  income: 'text-emerald-600 dark:text-emerald-400',
+  expense: 'text-red-500 dark:text-red-400',
 }
 
 interface RowProps {
@@ -31,13 +31,13 @@ interface RowProps {
 
 function TransactionRow({ tx, selected, onToggle }: RowProps) {
   return (
-    <tr className={selected ? 'bg-white' : 'bg-gray-50 opacity-50'}>
+    <tr className={selected ? 'bg-white dark:bg-zinc-700' : 'bg-gray-50 dark:bg-zinc-800/50 opacity-50'}>
       <td className="px-3 py-2">
         <input type="checkbox" checked={selected} onChange={onToggle} className="rounded" />
       </td>
-      <td className="px-3 py-2 text-xs text-gray-500 tabular-nums">{tx.date}</td>
-      <td className="px-3 py-2 text-sm text-gray-900">{tx.description}</td>
-      <td className="px-3 py-2 text-xs text-gray-500">{tx.category}</td>
+      <td className="px-3 py-2 text-xs text-gray-500 dark:text-zinc-400 tabular-nums">{tx.date}</td>
+      <td className="px-3 py-2 text-sm text-gray-900 dark:text-zinc-100">{tx.description}</td>
+      <td className="px-3 py-2 text-xs text-gray-500 dark:text-zinc-400">{tx.category}</td>
       <td className={`px-3 py-2 text-sm font-medium tabular-nums text-right ${TYPE_STYLES[tx.type]}`}>
         {tx.type === 'income' ? '+' : '-'}${tx.amount.toFixed(2)}
       </td>
@@ -108,16 +108,16 @@ export function Import() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Import Statement</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Import Statement</h1>
+        <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
           Paste a CSV bank statement — Claude reads it via the Files API and extracts transactions.
         </p>
       </div>
 
       {/* How it works */}
-      <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-xs text-indigo-800 space-y-1">
+      <div className="bg-indigo-50 border border-indigo-100 text-indigo-800 dark:bg-indigo-950/40 dark:border-indigo-800 dark:text-indigo-300 rounded-xl p-4 text-xs space-y-1">
         <p className="font-medium text-sm">What the Files API adds</p>
-        <ol className="list-decimal list-inside space-y-0.5 text-indigo-700">
+        <ol className="list-decimal list-inside space-y-0.5 text-indigo-700 dark:text-indigo-400">
           <li>CSV uploaded once to Anthropic → stored as a file, returned a <code>file_id</code></li>
           <li>Message references <code>{`{ type: 'document', source: { type: 'file', file_id } }`}</code></li>
           <li>Same <code>file_id</code> can be reused in future messages with no re-upload</li>
@@ -129,10 +129,10 @@ export function Import() {
       {!preview && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">CSV content</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-zinc-300">CSV content</label>
             <button
               onClick={() => setCsv(SAMPLE_CSV)}
-              className="text-xs text-indigo-600 hover:underline"
+              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
             >
               Use sample statement
             </button>
@@ -142,7 +142,7 @@ export function Import() {
             onChange={e => setCsv(e.target.value)}
             rows={10}
             placeholder="Date,Description,Amount,Type&#10;2026-05-01,Salary,3200.00,credit&#10;…"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full bg-white border border-gray-300 text-gray-900 placeholder-gray-400 font-mono dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 dark:placeholder-zinc-400 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
           />
           <button
             onClick={handleExtract}
@@ -154,18 +154,18 @@ export function Import() {
         </div>
       )}
 
-      {extractError && <p className="text-red-500 text-sm">{extractError}</p>}
+      {extractError && <p className="text-red-500 dark:text-red-400 text-sm">{extractError}</p>}
 
       {extracting && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-sm text-gray-400 animate-pulse">Uploading to Files API and extracting…</p>
+        <div className="bg-white border border-gray-200 dark:bg-zinc-700 dark:border-zinc-600 rounded-xl p-5">
+          <p className="text-sm text-gray-400 dark:text-zinc-500 animate-pulse">Uploading to Files API and extracting…</p>
         </div>
       )}
 
       {/* Import success */}
       {importedCount > 0 && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-          <p className="text-sm font-medium text-emerald-700">
+        <div className="bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 rounded-xl p-4">
+          <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
             ✓ {importedCount} transactions imported — check the Transactions page.
           </p>
         </div>
@@ -176,17 +176,17 @@ export function Import() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-700">
+              <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
                 {preview.transactions.length} transactions extracted
               </p>
               {preview.notes && (
-                <p className="text-xs text-gray-400 mt-0.5 italic">{preview.notes}</p>
+                <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5 italic">{preview.notes}</p>
               )}
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => { setPreview(null); setCsv('') }}
-                className="text-xs text-gray-500 hover:text-gray-700"
+                className="text-xs text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200"
               >
                 Cancel
               </button>
@@ -200,9 +200,9 @@ export function Import() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white border border-gray-200 dark:bg-zinc-700 dark:border-zinc-600 rounded-xl overflow-hidden">
             <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-zinc-700/50 border-b border-gray-200 dark:border-zinc-600">
                 <tr>
                   <th className="px-3 py-2">
                     <input
@@ -212,13 +212,13 @@ export function Import() {
                       className="rounded"
                     />
                   </th>
-                  <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Date</th>
-                  <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Description</th>
-                  <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Category</th>
-                  <th className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Amount</th>
+                  <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Date</th>
+                  <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Description</th>
+                  <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Category</th>
+                  <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wide text-right">Amount</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-200 dark:divide-zinc-600">
                 {preview.transactions.map((tx, i) => (
                   <TransactionRow
                     key={i}

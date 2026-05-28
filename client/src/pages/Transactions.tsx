@@ -84,18 +84,18 @@ export function Transactions() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Transactions</h1>
         <div className="flex items-center gap-2">
           <input
             type="month" value={selectedMonth}
             onChange={e => setSelectedMonth(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="bg-white border border-gray-300 text-gray-900 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <button
             onClick={handleExportExcel}
             disabled={exporting || transactions.length === 0}
             title="Export to Excel"
-            className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            className="px-3 py-1.5 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-600 disabled:opacity-40 rounded-lg transition-colors"
           >
             ⬇ Excel
           </button>
@@ -103,7 +103,7 @@ export function Transactions() {
             onClick={handleExportPdf}
             disabled={exporting || !summary}
             title="Export PDF report"
-            className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            className="px-3 py-1.5 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-600 disabled:opacity-40 rounded-lg transition-colors"
           >
             ⬇ PDF
           </button>
@@ -119,12 +119,12 @@ export function Transactions() {
       {/* Summary bar */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Income', value: total.income, color: 'text-emerald-600' },
-          { label: 'Expenses', value: total.expense, color: 'text-red-500' },
-          { label: 'Net', value: total.income - total.expense, color: total.income - total.expense >= 0 ? 'text-emerald-600' : 'text-red-500' },
+          { label: 'Income', value: total.income, color: 'text-emerald-600 dark:text-emerald-400' },
+          { label: 'Expenses', value: total.expense, color: 'text-red-500 dark:text-red-400' },
+          { label: 'Net', value: total.income - total.expense, color: total.income - total.expense >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400' },
         ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white rounded-xl border border-gray-200 p-4">
-            <p className="text-xs text-gray-500 mb-1">{label}</p>
+          <div key={label} className="bg-white border border-gray-200 dark:bg-zinc-700 dark:border-zinc-600 rounded-xl p-4">
+            <p className="text-xs text-gray-500 dark:text-zinc-400 mb-1">{label}</p>
             <p className={`text-xl font-bold tabular-nums ${color}`}>
               ${value.toFixed(2)}
             </p>
@@ -133,9 +133,9 @@ export function Transactions() {
       </div>
 
       {/* List */}
-      <div className="bg-white rounded-xl border border-gray-200 px-4 py-2">
+      <div className="bg-white border border-gray-200 dark:bg-zinc-700 dark:border-zinc-600 rounded-xl px-4 py-2">
         {loading ? (
-          <p className="text-gray-400 text-center py-12 text-sm">Loading…</p>
+          <p className="text-gray-400 dark:text-zinc-500 text-center py-12 text-sm">Loading…</p>
         ) : (
           <TransactionList
             transactions={transactions}
