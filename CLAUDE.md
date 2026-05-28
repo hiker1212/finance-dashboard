@@ -239,6 +239,14 @@ The `.env` file and all `*.db` / `*.db-journal` files are gitignored and must ne
 
 ---
 
+## Git Workflow
+
+- **Feature branches**: every issue or feature gets its own branch off `develop`, named `feature/<short-description>` or `claude/issue-<number>-<short-description>`.
+- **Merge approval required**: never merge any branch into `develop` or `main` without explicit user approval. Always stop and ask before merging.
+- Development branches are pushed and a PR is opened for review; merging is a human decision.
+
+---
+
 ## Key Decisions (Architecture Log)
 
 - `@libsql/client` over `better-sqlite3`: avoids native compilation issues on Windows (Node 24 + node-gyp).
