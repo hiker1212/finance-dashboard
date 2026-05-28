@@ -47,6 +47,13 @@ export function Budgets() {
     load()
   }
 
+  async function handleDeleteCategory(categoryId: number) {
+    if (!confirm('Delete this category? Its transactions will be uncategorized.')) return
+    await categoriesApi.remove(categoryId)
+    refreshCategories()
+    load()
+  }
+
   async function handleAddCategory(e: React.FormEvent) {
     e.preventDefault()
     if (!newCatName.trim()) return
@@ -82,6 +89,7 @@ export function Budgets() {
                 setLimitInput(b.monthly_limit.toString())
               }}
               onRemove={() => handleRemoveBudget(b.category_id)}
+              onDeleteCategory={() => handleDeleteCategory(b.category_id)}
             />
           ))}
         </div>

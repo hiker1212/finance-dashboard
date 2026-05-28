@@ -5,9 +5,10 @@ interface Props {
   limit: number
   onEdit: () => void
   onRemove: () => void
+  onDeleteCategory?: () => void
 }
 
-export function BudgetCard({ categoryName, categoryColor, spent, limit, onEdit, onRemove }: Props) {
+export function BudgetCard({ categoryName, categoryColor, spent, limit, onEdit, onRemove, onDeleteCategory }: Props) {
   const pct = Math.min((spent / limit) * 100, 100)
   const isOver = spent > limit
   const isNear = !isOver && pct >= 80
@@ -34,6 +35,9 @@ export function BudgetCard({ categoryName, categoryColor, spent, limit, onEdit, 
         <div className="flex gap-2">
           <button onClick={onEdit} className="text-xs text-gray-400 hover:text-indigo-600 dark:text-zinc-500 dark:hover:text-indigo-400 transition-colors">Edit</button>
           <button onClick={onRemove} className="text-xs text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors">Remove</button>
+          {onDeleteCategory && (
+            <button onClick={onDeleteCategory} className="text-xs text-gray-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-500 transition-colors">Delete cat.</button>
+          )}
         </div>
       </div>
 
