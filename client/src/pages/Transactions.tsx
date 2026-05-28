@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../context/AppContext'
 import { transactionsApi } from '../api/transactions'
 import { categoriesApi } from '../api/categories'
+import { budgetsApi } from '../api/budgets'
 import { summaryApi } from '../api/summary'
 import { TransactionList } from '../components/TransactionList'
 import { TransactionForm } from '../components/TransactionForm'
@@ -63,8 +64,11 @@ export function Transactions() {
     load()
   }
 
-  async function handleCreateCategory(data: { name: string; color: string }) {
-    const cat = await categoriesApi.create(data)
+  async function handleCreateCategory(data: { name: string; color: string; monthlyLimit?: number }) {
+    const cat = await categoriesApi.create({ name: data.name, color: data.color })
+    if (data.monthlyLimit) {
+      await budgetsApi.upsert(cat.id as number, data.monthlyLimit)
+    }
     refreshCategories()
     return cat
   }
