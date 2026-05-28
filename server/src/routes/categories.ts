@@ -59,6 +59,8 @@ categoriesRouter.delete('/:id', async (req, res, next) => {
   try {
     const id = parseId(req.params.id)
     if (id === null) { res.status(400).json({ error: 'Invalid ID' }); return }
+    await db.execute({ sql: 'UPDATE transactions SET category_id = NULL WHERE category_id = ?', args: [id] })
+    await db.execute({ sql: 'DELETE FROM budgets WHERE category_id = ?', args: [id] })
     await db.execute({ sql: 'DELETE FROM categories WHERE id = ?', args: [id] })
     res.status(204).send()
   } catch (err) {
