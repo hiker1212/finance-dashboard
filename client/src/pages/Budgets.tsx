@@ -17,6 +17,7 @@ export function Budgets() {
   const [newCatColor, setNewCatColor] = useState('#6366f1')
   const [saving, setSaving] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<number | null>(null)
 
   const load = useCallback(async () => {
     const [b, summary] = await Promise.all([
@@ -117,14 +118,45 @@ export function Budgets() {
           <h2 className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3">Set a budget for…</h2>
           <div className="flex flex-wrap gap-2">
             {unbudgeted.map(c => (
-              <button
-                key={c.id}
-                onClick={() => { setEditingBudget({ categoryId: c.id, name: c.name }); setLimitInput('') }}
-                className="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:border-indigo-400 hover:text-indigo-600 dark:border-zinc-600 dark:text-zinc-400 dark:hover:border-indigo-400 dark:hover:text-indigo-400 transition-colors"
-                style={{ borderLeftColor: c.color, borderLeftWidth: 3 }}
-              >
-                {c.name}
-              </button>
+              <div key={c.id} className="inline-flex items-center rounded-full border border-gray-200 dark:border-zinc-600 overflow-hidden" style={{ borderLeftColor: c.color, borderLeftWidth: 3 }}>
+                {confirmingDeleteId === c.id ? (
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs">
+                    <span className="text-red-600 dark:text-red-400">Delete?</span>
+                    <button
+                      type="button"
+                      onClick={() => { setConfirmingDeleteId(null); handleDeleteCategory(c.id) }}
+                      className="font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingDeleteId(null)}
+                      className="text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
+                    >
+                      No
+                    </button>
+                  </span>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => { setEditingBudget({ categoryId: c.id, name: c.name }); setLimitInput('') }}
+                      className="text-xs px-3 py-1.5 text-gray-600 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 transition-colors"
+                    >
+                      {c.name}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingDeleteId(c.id)}
+                      className="text-xs pr-2.5 text-gray-300 hover:text-red-500 dark:text-zinc-600 dark:hover:text-red-400 transition-colors"
+                      title="Delete category"
+                    >
+                      ×
+                    </button>
+                  </>
+                )}
+              </div>
             ))}
           </div>
         </div>
