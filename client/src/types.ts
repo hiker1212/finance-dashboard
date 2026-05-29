@@ -48,3 +48,12 @@ export interface MonthlySummary {
   transaction_count: number
   by_category: CategorySummary[]
 }
+
+export interface RangeSummary {
+  from: string
+  to: string
+  total_income: number
+  total_expenses: number
+  transaction_count: number
+  by_category: CategorySummary[]
+}

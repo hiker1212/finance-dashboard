@@ -10,23 +10,37 @@ import { CategoryBadge } from '../components/CategoryBadge'
 import { SpendingPieChart } from '../components/SpendingPieChart'
 import { MonthlyTrendChart } from '../components/MonthlyTrendChart'
 import type { TrendDataPoint } from '../components/MonthlyTrendChart'
-import type { MonthlySummary, Transaction } from '../types'
+import type { RangeSummary, MonthlySummary, Transaction } from '../types'
 
-function getPrev6Months(selectedMonth: string): string[] {
-  const [year, mon] = selectedMonth.split('-').map(Number)
+function currentMonth() {
+  return new Date().toISOString().slice(0, 7)
+}
+
+function currentYearStart() {
+  return new Date().getFullYear() + '-01'
+}
+
+function getMonthsInRange(from: string, to: string): string[] {
   const months: string[] = []
-  for (let i = 5; i >= 0; i--) {
-    let m = mon - i
-    let y = year
-    while (m <= 0) { m += 12; y-- }
+  const [fy, fm] = from.split('-').map(Number)
+  const [ty, tm] = to.split('-').map(Number)
+  let y = fy, m = fm
+  while (y < ty || (y === ty && m <= tm)) {
     months.push(`${y}-${String(m).padStart(2, '0')}`)
+    m++
+    if (m > 12) { m = 1; y++ }
+    if (months.length >= 24) break
   }
   return months
 }
 
 export function Dashboard() {
-  const { selectedMonth, setSelectedMonth } = useApp()
-  const [summary, setSummary] = useState<MonthlySummary | null>(null)
+  const { selectedMonth } = useApp()
+  const [fromMonth, setFromMonth] = useState(currentYearStart)
+  const [toMonth, setToMonth] = useState(currentMonth)
+  const [rangeError, setRangeError] = useState<string | null>(null)
+
+  const [summary, setSummary] = useState<RangeSummary | null>(null)
   const [recent, setRecent] = useState<Transaction[]>([])
   const [trend, setTrend] = useState<TrendDataPoint[]>([])
   const [loading, setLoading] = useState(true)
@@ -71,18 +85,26 @@ export function Dashboard() {
     setExporting(true)
     try {
       const { exportSummaryToPdf } = await import('../utils/exportPdf')
-      await exportSummaryToPdf(summary, recent)
+      const fakeMonthlySummary: MonthlySummary = {
+        month: `${fromMonth} – ${toMonth}`,
+        total_income: Number(summary.total_income),
+        total_expenses: Number(summary.total_expenses),
+        transaction_count: Number(summary.transaction_count),
+        by_category: summary.by_category,
+      }
+      await exportSummaryToPdf(fakeMonthlySummary, recent)
     } finally {
       setExporting(false)
     }
   }
 
   const load = useCallback(async () => {
+    if (fromMonth > toMonth) return
     setLoading(true)
     try {
-      const months = getPrev6Months(selectedMonth)
+      const months = getMonthsInRange(fromMonth, toMonth)
       const [s, txs, monthSummaries] = await Promise.all([
-        summaryApi.get(selectedMonth),
+        summaryApi.getRange(fromMonth, toMonth),
         transactionsApi.list(selectedMonth),
         Promise.all(months.map(m => summaryApi.get(m))),
       ])
@@ -90,27 +112,52 @@ export function Dashboard() {
       setRecent(txs.slice(0, 5))
       setTrend(months.map((month, i) => ({
         month,
-        income: monthSummaries[i].total_income,
-        expenses: monthSummaries[i].total_expenses,
+        income: Number(monthSummaries[i].total_income),
+        expenses: Number(monthSummaries[i].total_expenses),
       })))
     } finally {
       setLoading(false)
     }
-  }, [selectedMonth])
+  }, [fromMonth, toMonth, selectedMonth])
 
   useEffect(() => { load() }, [load])
 
-  const net = (summary?.total_income ?? 0) - (summary?.total_expenses ?? 0)
+  function handleFromChange(val: string) {
+    setFromMonth(val)
+    if (val > toMonth) {
+      setRangeError('"From" cannot be after "To"')
+    } else {
+      setRangeError(null)
+    }
+  }
+
+  function handleToChange(val: string) {
+    setToMonth(val)
+    if (fromMonth > val) {
+      setRangeError('"From" cannot be after "To"')
+    } else {
+      setRangeError(null)
+    }
+  }
+
+  const net = (Number(summary?.total_income) ?? 0) - (Number(summary?.total_expenses) ?? 0)
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Dashboard</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm text-gray-500 dark:text-zinc-400">From</span>
           <input
-            type="month" value={selectedMonth}
-            onChange={e => setSelectedMonth(e.target.value)}
+            type="month" value={fromMonth}
+            onChange={e => handleFromChange(e.target.value)}
+            className="bg-white border border-gray-300 text-gray-900 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <span className="text-sm text-gray-500 dark:text-zinc-400">To</span>
+          <input
+            type="month" value={toMonth}
+            onChange={e => handleToChange(e.target.value)}
             className="bg-white border border-gray-300 text-gray-900 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <button
@@ -124,6 +171,12 @@ export function Dashboard() {
         </div>
       </div>
 
+      {rangeError && (
+        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-4 py-2">
+          {rangeError}
+        </p>
+      )}
+
       {loading ? (
         <p className="text-gray-400 dark:text-zinc-500 text-sm">Loading…</p>
       ) : (
@@ -131,8 +184,8 @@ export function Dashboard() {
           {/* KPI cards */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'Income', value: summary?.total_income ?? 0, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/40' },
-              { label: 'Expenses', value: summary?.total_expenses ?? 0, color: 'text-red-500 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-950/40' },
+              { label: 'Income', value: Number(summary?.total_income ?? 0), color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/40' },
+              { label: 'Expenses', value: Number(summary?.total_expenses ?? 0), color: 'text-red-500 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-950/40' },
               { label: 'Net savings', value: net, color: net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400', bg: net >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/40' : 'bg-red-50 dark:bg-red-950/40' },
             ].map(({ label, value, color, bg }) => (
               <div key={label} className={`rounded-xl p-5 ${bg}`}>
@@ -156,7 +209,7 @@ export function Dashboard() {
             </div>
             {recent.length === 0 ? (
               <p className="text-gray-400 dark:text-zinc-500 text-sm text-center py-6">
-                No transactions this month.{' '}
+                No transactions yet.{' '}
                 <Link to="/transactions" className="text-indigo-600 dark:text-indigo-400 hover:underline">Add one</Link>
               </p>
             ) : (
