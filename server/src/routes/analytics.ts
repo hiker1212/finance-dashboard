@@ -13,10 +13,13 @@ analyticsRouter.get('/monthly-by-category', async (_req, res, next) => {
               COALESCE(
                 CAST(SUM(t.amount) AS REAL) / NULLIF(COUNT(DISTINCT strftime('%Y-%m', t.date)), 0),
                 0
-              ) AS avg_monthly_spending
+              ) AS avg_monthly_spending,
+              b.monthly_limit
             FROM categories c
             LEFT JOIN transactions t
               ON t.category_id = c.id AND t.type = 'expense'
+            LEFT JOIN budgets b
+              ON b.category_id = c.id
             GROUP BY c.id
             ORDER BY avg_monthly_spending DESC`,
       args: [],
