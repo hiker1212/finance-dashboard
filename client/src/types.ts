@@ -38,6 +38,7 @@ export interface CategoryAvgSpending {
   name: string
   color: string
   avg_monthly_spending: number
+  monthly_limit?: number
 }
 
 export interface MonthlySummary {

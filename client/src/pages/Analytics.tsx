@@ -41,11 +41,22 @@ export function Analytics() {
               <th className="px-6 py-3">Category</th>
               <th className="px-6 py-3 text-right">Avg / Month</th>
               <th className="px-6 py-3 text-right">% of Total</th>
+              <th className="px-6 py-3 text-right">vs Budget</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-zinc-600">
             {rows.map((row) => {
               const pct = total > 0 ? (row.avg_monthly_spending / total) * 100 : 0
+              const budgetPct = row.monthly_limit && row.monthly_limit > 0
+                ? (row.avg_monthly_spending / row.monthly_limit) * 100
+                : null
+              const budgetColor = budgetPct === null
+                ? 'text-gray-400 dark:text-zinc-500'
+                : budgetPct >= 100
+                  ? 'text-red-600 dark:text-red-400 font-semibold'
+                  : budgetPct >= 80
+                    ? 'text-amber-600 dark:text-amber-400'
+                    : 'text-emerald-600 dark:text-emerald-400'
               return (
                 <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-zinc-600/30 transition-colors">
                   <td className="px-6 py-3">
@@ -59,6 +70,9 @@ export function Analytics() {
                   <td className="px-6 py-3 text-right text-gray-500 dark:text-zinc-400">
                     {pct > 0 ? `${pct.toFixed(1)}%` : '—'}
                   </td>
+                  <td className={`px-6 py-3 text-right ${budgetColor}`}>
+                    {budgetPct !== null ? `${budgetPct.toFixed(0)}%` : '—'}
+                  </td>
                 </tr>
               )
             })}
@@ -69,6 +83,7 @@ export function Analytics() {
                 <td className="px-6 py-3">Total</td>
                 <td className="px-6 py-3 text-right">${total.toFixed(2)}</td>
                 <td className="px-6 py-3 text-right">100%</td>
+                <td className="px-6 py-3 text-right">—</td>
               </tr>
             </tfoot>
           )}
