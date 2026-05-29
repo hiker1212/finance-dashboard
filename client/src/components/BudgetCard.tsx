@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 interface Props {
   categoryName: string
   categoryColor: string
@@ -9,6 +11,8 @@ interface Props {
 }
 
 export function BudgetCard({ categoryName, categoryColor, spent, limit, onEdit, onRemove, onDeleteCategory }: Props) {
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+
   const pct = Math.min((spent / limit) * 100, 100)
   const isOver = spent > limit
   const isNear = !isOver && pct >= 80
@@ -32,11 +36,33 @@ export function BudgetCard({ categoryName, categoryColor, spent, limit, onEdit, 
             </span>
           )}
         </div>
-        <div className="flex gap-2">
-          <button onClick={onEdit} className="text-xs text-gray-400 hover:text-indigo-600 dark:text-zinc-500 dark:hover:text-indigo-400 transition-colors">Edit</button>
-          <button onClick={onRemove} className="text-xs text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors">Remove</button>
-          {onDeleteCategory && (
-            <button onClick={onDeleteCategory} className="text-xs text-gray-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-500 transition-colors">Delete cat.</button>
+        <div className="flex items-center gap-2">
+          {confirmingDelete ? (
+            <>
+              <span className="text-xs text-red-600 dark:text-red-400">Delete category?</span>
+              <button
+                type="button"
+                onClick={() => { setConfirmingDelete(false); onDeleteCategory?.() }}
+                className="text-xs font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+              >
+                Yes
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingDelete(false)}
+                className="text-xs text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
+              >
+                No
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="button" onClick={onEdit} className="text-xs text-gray-400 hover:text-indigo-600 dark:text-zinc-500 dark:hover:text-indigo-400 transition-colors">Edit</button>
+              <button type="button" onClick={onRemove} className="text-xs text-gray-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors">Remove</button>
+              {onDeleteCategory && (
+                <button type="button" onClick={() => setConfirmingDelete(true)} className="text-xs text-gray-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-500 transition-colors">Delete cat.</button>
+              )}
+            </>
           )}
         </div>
       </div>

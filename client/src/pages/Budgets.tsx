@@ -16,6 +16,7 @@ export function Budgets() {
   const [newCatName, setNewCatName] = useState('')
   const [newCatColor, setNewCatColor] = useState('#6366f1')
   const [saving, setSaving] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     const [b, summary] = await Promise.all([
@@ -42,16 +43,24 @@ export function Budgets() {
   }
 
   async function handleRemoveBudget(categoryId: number) {
-    if (!confirm('Remove this budget?')) return
-    await budgetsApi.remove(categoryId)
-    load()
+    setActionError(null)
+    try {
+      await budgetsApi.remove(categoryId)
+      await load()
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to remove budget')
+    }
   }
 
   async function handleDeleteCategory(categoryId: number) {
-    if (!confirm('Delete this category? Its transactions will be uncategorized.')) return
-    await categoriesApi.remove(categoryId)
-    refreshCategories()
-    load()
+    setActionError(null)
+    try {
+      await categoriesApi.remove(categoryId)
+      refreshCategories()
+      await load()
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to delete category')
+    }
   }
 
   async function handleAddCategory(e: React.FormEvent) {
@@ -74,6 +83,12 @@ export function Budgets() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Budgets</h1>
+
+      {actionError && (
+        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-4 py-2">
+          {actionError}
+        </p>
+      )}
 
       {budgets.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

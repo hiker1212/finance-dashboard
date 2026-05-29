@@ -7,7 +7,7 @@ interface Props {
   initial?: Transaction | null
   onSubmit: (data: TransactionPayload) => Promise<void>
   onCancel: () => void
-  onCreateCategory?: (data: { name: string; color: string }) => Promise<Category>
+  onCreateCategory?: (data: { name: string; color: string; monthlyLimit?: number }) => Promise<Category>
 }
 
 export function TransactionForm({ categories, initial, onSubmit, onCancel, onCreateCategory }: Props) {
@@ -22,6 +22,7 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel, onCre
   const [showNewCat, setShowNewCat] = useState(false)
   const [newCatName, setNewCatName] = useState('')
   const [newCatColor, setNewCatColor] = useState('#6366f1')
+  const [newCatLimit, setNewCatLimit] = useState('')
   const [newCatSaving, setNewCatSaving] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -51,10 +52,16 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel, onCre
     if (!onCreateCategory || !newCatName.trim()) return
     setNewCatSaving(true)
     try {
-      const cat = await onCreateCategory({ name: newCatName.trim(), color: newCatColor })
+      const limitVal = parseFloat(newCatLimit)
+      const cat = await onCreateCategory({
+        name: newCatName.trim(),
+        color: newCatColor,
+        monthlyLimit: !isNaN(limitVal) && limitVal > 0 ? limitVal : undefined,
+      })
       setCategoryId(String(cat.id))
       setNewCatName('')
       setNewCatColor('#6366f1')
+      setNewCatLimit('')
       setShowNewCat(false)
     } finally {
       setNewCatSaving(false)
@@ -112,36 +119,49 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel, onCre
             ))}
           </select>
           {showNewCat && (
-            <div className="mt-2 flex items-center gap-2">
-              <input
-                type="text"
-                value={newCatName}
-                onChange={e => setNewCatName(e.target.value)}
-                placeholder="Category name"
-                className="flex-1 bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 dark:placeholder-zinc-400"
-                autoFocus
-              />
-              <input
-                type="color"
-                value={newCatColor}
-                onChange={e => setNewCatColor(e.target.value)}
-                className="h-8 w-10 rounded border border-gray-300 dark:border-zinc-500 cursor-pointer bg-white dark:bg-zinc-600"
-              />
-              <button
-                type="button"
-                onClick={handleAddCategory}
-                disabled={newCatSaving || !newCatName.trim()}
-                className="px-2.5 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-              >
-                {newCatSaving ? '…' : 'Add'}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowNewCat(false); setNewCatName(''); setNewCatColor('#6366f1') }}
-                className="text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300 text-lg leading-none"
-              >
-                ×
-              </button>
+            <div className="mt-2 space-y-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newCatName}
+                  onChange={e => setNewCatName(e.target.value)}
+                  placeholder="Category name"
+                  className="flex-1 bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 dark:placeholder-zinc-400"
+                  autoFocus
+                />
+                <input
+                  type="color"
+                  value={newCatColor}
+                  onChange={e => setNewCatColor(e.target.value)}
+                  className="h-9 w-12 rounded border border-gray-300 dark:border-zinc-500 cursor-pointer bg-white dark:bg-zinc-600 shrink-0"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={newCatLimit}
+                  onChange={e => setNewCatLimit(e.target.value)}
+                  placeholder="Monthly budget limit (optional)"
+                  className="flex-1 bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 dark:placeholder-zinc-400"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCategory}
+                  disabled={newCatSaving || !newCatName.trim()}
+                  className="px-2.5 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors shrink-0"
+                >
+                  {newCatSaving ? '…' : 'Add'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowNewCat(false); setNewCatName(''); setNewCatColor('#6366f1'); setNewCatLimit('') }}
+                  className="text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300 text-lg leading-none shrink-0"
+                >
+                  ×
+                </button>
+              </div>
             </div>
           )}
         </div>
