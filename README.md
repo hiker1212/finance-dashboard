@@ -71,10 +71,10 @@ cd server && npm run dev
 cd client && npm run dev
 ```
 
-Open **http://localhost:5173**, then seed realistic data:
+Open **http://localhost:5173**. If running inside a Claude Code session, the database is **seeded automatically** on session start. Otherwise, seed manually:
 
 ```
-/seed     # in Claude Code — creates categories, budgets, and 44 transactions
+/seed     # in Claude Code — creates categories, budgets, and transactions
 ```
 
 ## API endpoints
@@ -126,11 +126,13 @@ This repo ships with Claude Code configuration:
 
 - **`.claude/settings.json`** — hooks, permissions allowlist/deny list, dev env vars injected automatically
 - **`.claude/commands/`** — `/seed`, `/reset-db`, `/typecheck` and others available as slash commands inside Claude Code sessions
+- **`scripts/auto-seed.sh`** — called by the `SessionStart` hook; seeds the database when empty so every fresh session has demo data immediately
 
 ### Hooks
 
 | Type | Trigger | What it does |
 |---|---|---|
+| `SessionStart` | New Claude Code session | Checks if DB is empty; seeds 5 categories, 5 budgets, and 36 transactions if so |
 | `PreToolUse` | Any `Bash` call running `npm run dev` / `npm start` | Blocks the command if `ANTHROPIC_API_KEY` is set in `server/.env`, preventing accidental live API billing |
 | `PostToolUse` | Edit on any `client/` file | Runs ESLint `--fix` on the saved file automatically |
 | `PostToolUse` | Edit on any `server/*.test.ts` file | Re-runs just that test file with Vitest |

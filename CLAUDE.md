@@ -53,11 +53,13 @@ cd server && npx vitest run src/routes/transactions.test.ts
 
 | Hook type | Matcher | Purpose |
 |---|---|---|
+| `SessionStart` | — | Seeds demo data into an empty DB on session start (`scripts/auto-seed.sh`) |
 | `PreToolUse` | `Bash` | Blocks `npm run dev`/`npm start` when `ANTHROPIC_API_KEY` is set, preventing accidental billing |
 | `PostToolUse` | `Edit` | Auto-runs ESLint `--fix` on edited client files; re-runs Vitest when a server test file is saved |
 | `Stop` | — | Prints estimated API spend for the session when Claude Code exits |
 
 Hook shell commands receive the tool input as JSON on stdin and may output `{"decision":"block","reason":"..."}` to cancel the tool call.
+`SessionStart` and `Stop` hooks have no matcher and run unconditionally.
 
 ---
 
