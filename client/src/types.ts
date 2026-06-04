@@ -49,6 +49,13 @@ export interface MonthlySummary {
   by_category: CategorySummary[]
 }
 
+export interface ReceiptExtraction {
+  merchant: string
+  amount: number
+  date: string
+  suggested_category: 'Food & Groceries' | 'Transport' | 'Entertainment' | 'Utilities' | 'Health' | 'Other'
+}
+
 export interface RangeSummary {
   from: string
   to: string
