@@ -17,7 +17,7 @@ A personal finance tracker built as a hands-on learning project to explore every
 - **Batch Score** — score all months at once via the Batch API (50% cheaper, async)
 - **Import Statement** — paste a CSV, Claude extracts transactions via Files API
 - **Token Usage** — live cost tracking + pre-flight token counter
-- **Deep Analysis** — multi-month analysis using claude-opus-4-7 with extended thinking
+- **Deep Analysis** — multi-month analysis using claude-opus-4-8 with live streaming extended thinking
 - **Receipt Scanner** — photograph a receipt to auto-fill the Add Transaction form (vision / image input)
 
 ## Tech stack
@@ -28,7 +28,7 @@ A personal finance tracker built as a hands-on learning project to explore every
 | Backend | Node.js + Express + TypeScript |
 | Database | SQLite via `@libsql/client` |
 | Testing | Vitest + Supertest (integration) + Playwright (E2E) |
-| AI | Anthropic SDK — claude-sonnet-4-6 / claude-opus-4-7 |
+| AI | Anthropic SDK — claude-sonnet-4-6 / claude-opus-4-8 |
 
 ## Project structure
 
@@ -98,7 +98,8 @@ Open **http://localhost:5173**. If running inside a Claude Code session, the dat
 | GET | `/api/batch/:id` | Poll batch status |
 | GET | `/api/batch/:id/results` | Retrieve batch results |
 | POST | `/api/import/preview` | Extract transactions from CSV via Files API |
-| POST | `/api/analysis` | Deep analysis (claude-opus-4-7 + thinking) |
+| POST | `/api/analysis` | Deep analysis (one-shot, claude-opus-4-8 + thinking) |
+| POST | `/api/analysis/stream` | Deep analysis with live streaming thinking + prose (SSE) |
 | POST | `/api/receipt` | Extract transaction data from a receipt image (vision) |
 | GET | `/api/usage` | Accumulated token usage + costs |
 | POST | `/api/usage/count` | Count tokens without spending credits |

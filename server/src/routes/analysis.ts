@@ -70,17 +70,21 @@ async function buildMonthSummary(month: string) {
   }
 }
 
+async function fetchMonthRows(months: number) {
+  return db.execute({
+    sql: `SELECT DISTINCT strftime('%Y-%m', date) AS month
+          FROM transactions
+          ORDER BY month DESC
+          LIMIT ?`,
+    args: [months],
+  })
+}
+
 analysisRouter.post('/', async (req, res, next) => {
   try {
     const { months } = BodySchema.parse(req.body)
 
-    const monthRows = await db.execute({
-      sql: `SELECT DISTINCT strftime('%Y-%m', date) AS month
-            FROM transactions
-            ORDER BY month DESC
-            LIMIT ?`,
-      args: [months],
-    })
+    const monthRows = await fetchMonthRows(months)
 
     if (monthRows.rows.length === 0) {
       res.status(400).json({ error: 'No transaction data found.' })
@@ -91,9 +95,9 @@ analysisRouter.post('/', async (req, res, next) => {
     const summaries = await Promise.all(monthLabels.map(buildMonthSummary))
 
     const response = await client.messages.create({
-      model: 'claude-opus-4-7',
+      model: 'claude-opus-4-8',
       max_tokens: 16000,
-      thinking: { type: 'adaptive' },
+      thinking: { type: 'enabled', budget_tokens: 10000 },
       system: [{
         type: 'text',
         text: SYSTEM_PROMPT,
@@ -122,6 +126,67 @@ analysisRouter.post('/', async (req, res, next) => {
       analysis: analysisText,
       months_analyzed: summaries.length,
     })
+  } catch (err) {
+    next(err)
+  }
+})
+
+analysisRouter.post('/stream', async (req, res, next) => {
+  try {
+    const { months } = BodySchema.parse(req.body)
+
+    const monthRows = await fetchMonthRows(months)
+
+    if (monthRows.rows.length === 0) {
+      res.status(400).json({ error: 'No transaction data found.' })
+      return
+    }
+
+    const monthLabels = monthRows.rows.map(r => r.month as string)
+    const summaries = await Promise.all(monthLabels.map(buildMonthSummary))
+
+    // Commit to SSE — errors before this still return JSON
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders()
+
+    try {
+      const stream = client.messages.stream({
+        model: 'claude-opus-4-8',
+        max_tokens: 16000,
+        thinking: { type: 'enabled', budget_tokens: 10000 },
+        system: [{
+          type: 'text',
+          text: SYSTEM_PROMPT,
+          cache_control: { type: 'ephemeral' },
+        }],
+        messages: [{
+          role: 'user',
+          content: `Please analyse my finances across the following ${summaries.length} month(s):\n\n${JSON.stringify(summaries, null, 2)}`,
+        }],
+      })
+
+      const finalMsgPromise = stream.finalMessage()
+
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta') {
+          if (event.delta.type === 'thinking_delta') {
+            res.write(`data: ${JSON.stringify({ type: 'thinking', chunk: event.delta.thinking })}\n\n`)
+          } else if (event.delta.type === 'text_delta') {
+            res.write(`data: ${JSON.stringify({ type: 'text', chunk: event.delta.text })}\n\n`)
+          }
+        }
+      }
+
+      const finalMsg = await finalMsgPromise
+      recordUsage('analysis_stream', finalMsg.usage)
+      res.write(`data: ${JSON.stringify({ type: 'done', months_analyzed: summaries.length })}\n\n`)
+      res.end()
+    } catch (streamErr) {
+      res.write(`event: error\ndata: ${JSON.stringify(streamErr instanceof Error ? streamErr.message : 'Stream error')}\n\n`)
+      res.end()
+    }
   } catch (err) {
     next(err)
   }
