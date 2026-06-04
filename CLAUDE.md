@@ -61,6 +61,19 @@ cd server && npx vitest run src/routes/transactions.test.ts
 Hook shell commands receive the tool input as JSON on stdin and may output `{"decision":"block","reason":"..."}` to cancel the tool call.
 `SessionStart` and `Stop` hooks have no matcher and run unconditionally.
 
+### MCP server (`.mcp.json` + `server/mcp.ts`)
+
+The `finance-db` MCP server is registered in `.mcp.json` at the project root. It exposes 4 read-only tools to Claude Code for DB inspection during development:
+
+| Tool | Arguments | What it returns |
+|---|---|---|
+| `get_schema` | — | Column definitions for all 3 tables |
+| `get_row_counts` | — | Row count per table |
+| `sample_rows` | `table`, `limit` (1–20) | Up to 20 rows from a named table |
+| `run_report` | `name` (one of 4 reports) | Pre-approved read-only query results |
+
+The server is launched by Claude Code via `tsx server/mcp.ts` with `DB_PATH` injected via the `env` block in `.mcp.json`. It is **never** imported by the Express server.
+
 ---
 
 ## Architecture

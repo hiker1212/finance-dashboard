@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "finance-db": {
+      "command": "/home/user/finance-dashboard/server/node_modules/.bin/tsx",
+      "args": ["/home/user/finance-dashboard/server/mcp.ts"],
+      "env": {
+        "DB_PATH": "/home/user/finance-dashboard/server/data.db"
+      }
+    }
+  }
+}
