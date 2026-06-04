@@ -124,5 +124,14 @@ cd e2e && npx playwright test                  # E2E (needs both servers running
 
 This repo ships with Claude Code configuration:
 
-- **`.claude/settings.json`** — PostToolUse hooks (ESLint auto-fix, Vitest on test edits), permissions allowlist/deny list, dev env vars injected automatically
+- **`.claude/settings.json`** — hooks, permissions allowlist/deny list, dev env vars injected automatically
 - **`.claude/commands/`** — `/seed`, `/reset-db`, `/typecheck` and others available as slash commands inside Claude Code sessions
+
+### Hooks
+
+| Type | Trigger | What it does |
+|---|---|---|
+| `PreToolUse` | Any `Bash` call running `npm run dev` / `npm start` | Blocks the command if `ANTHROPIC_API_KEY` is set in `server/.env`, preventing accidental live API billing |
+| `PostToolUse` | Edit on any `client/` file | Runs ESLint `--fix` on the saved file automatically |
+| `PostToolUse` | Edit on any `server/*.test.ts` file | Re-runs just that test file with Vitest |
+| `Stop` | Session end | Prints an estimated API cost summary for the session (requires dev server running) |

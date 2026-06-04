@@ -49,6 +49,16 @@ npx playwright test --ui       # Interactive mode
 cd server && npx vitest run src/routes/transactions.test.ts
 ```
 
+### Claude Code hooks (`.claude/settings.json`)
+
+| Hook type | Matcher | Purpose |
+|---|---|---|
+| `PreToolUse` | `Bash` | Blocks `npm run dev`/`npm start` when `ANTHROPIC_API_KEY` is set, preventing accidental billing |
+| `PostToolUse` | `Edit` | Auto-runs ESLint `--fix` on edited client files; re-runs Vitest when a server test file is saved |
+| `Stop` | — | Prints estimated API spend for the session when Claude Code exits |
+
+Hook shell commands receive the tool input as JSON on stdin and may output `{"decision":"block","reason":"..."}` to cancel the tool call.
+
 ---
 
 ## Architecture
