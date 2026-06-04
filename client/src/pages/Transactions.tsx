@@ -4,6 +4,7 @@ import { transactionsApi } from '../api/transactions'
 import { categoriesApi } from '../api/categories'
 import { budgetsApi } from '../api/budgets'
 import { summaryApi } from '../api/summary'
+import { receiptApi } from '../api/receipt'
 import { TransactionList } from '../components/TransactionList'
 import { TransactionForm } from '../components/TransactionForm'
 import { Modal } from '../components/Modal'
@@ -71,6 +72,10 @@ export function Transactions() {
     }
     refreshCategories()
     return cat
+  }
+
+  async function handleScanReceipt(file: File) {
+    return receiptApi.analyze(file)
   }
 
   async function handleDelete(id: number) {
@@ -161,6 +166,7 @@ export function Transactions() {
             onSubmit={handleSubmit}
             onCancel={() => setEditing(undefined)}
             onCreateCategory={handleCreateCategory}
+            onScanReceipt={editing ? undefined : handleScanReceipt}
           />
         </Modal>
       )}

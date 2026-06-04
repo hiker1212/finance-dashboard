@@ -227,7 +227,7 @@ Anthropic SDK lives in `server/`. New capabilities follow this pattern:
 Choices already made — do not change without discussion:
 | Setting | Value | Reason |
 |---|---|---|
-| Standard model | `claude-sonnet-4-6` | Fast and cost-effective for insights |
+| Standard model | `claude-sonnet-4-6` | Fast and cost-effective for insights, receipt scanning, etc. |
 | Deep analysis model | `claude-opus-4-7` | Adaptive thinking for complex reasoning |
 | Thinking mode | `thinking: { type: 'enabled', budget_tokens: 10000 }` | SDK requires `enabled`; `adaptive` is not a valid SDK type |
 | Prompt caching | `cache_control: { type: 'ephemeral' }` on system prompt | Reduces cost on repeated calls |

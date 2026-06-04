@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import type { Transaction, Category } from '../types'
+import { useRef, useState } from 'react'
+import type { Transaction, Category, ReceiptExtraction } from '../types'
 import type { TransactionPayload } from '../api/transactions'
 
 interface Props {
@@ -8,9 +8,10 @@ interface Props {
   onSubmit: (data: TransactionPayload) => Promise<void>
   onCancel: () => void
   onCreateCategory?: (data: { name: string; color: string; monthlyLimit?: number }) => Promise<Category>
+  onScanReceipt?: (file: File) => Promise<ReceiptExtraction>
 }
 
-export function TransactionForm({ categories, initial, onSubmit, onCancel, onCreateCategory }: Props) {
+export function TransactionForm({ categories, initial, onSubmit, onCancel, onCreateCategory, onScanReceipt }: Props) {
   const [amount, setAmount] = useState(initial?.amount.toString() ?? '')
   const [type, setType] = useState<'income' | 'expense'>(initial?.type ?? 'expense')
   const [description, setDescription] = useState(initial?.description ?? '')
@@ -24,6 +25,10 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel, onCre
   const [newCatColor, setNewCatColor] = useState('#6366f1')
   const [newCatLimit, setNewCatLimit] = useState('')
   const [newCatSaving, setNewCatSaving] = useState(false)
+
+  const [receiptLoading, setReceiptLoading] = useState(false)
+  const [receiptError, setReceiptError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -68,10 +73,62 @@ export function TransactionForm({ categories, initial, onSubmit, onCancel, onCre
     }
   }
 
+  async function handleReceiptFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !onScanReceipt) return
+    e.target.value = ''
+    setReceiptError(null)
+    setReceiptLoading(true)
+    try {
+      const result = await onScanReceipt(file)
+      if (result.merchant) setDescription(result.merchant)
+      if (result.amount > 0) setAmount(result.amount.toFixed(2))
+      if (result.date) setDate(result.date)
+      // Try to match the suggested category to an existing one
+      const suggested = result.suggested_category.toLowerCase()
+      const match = categories.find(c => c.name.toLowerCase().includes(suggested.split(' ')[0]))
+      if (match) setCategoryId(String(match.id))
+    } catch (err) {
+      setReceiptError(err instanceof Error ? err.message : 'Receipt scan failed')
+    } finally {
+      setReceiptLoading(false)
+    }
+  }
+
   const inputCls = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-600 dark:border-zinc-500 dark:text-zinc-100 dark:placeholder-zinc-400'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {onScanReceipt && (
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleReceiptFile}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={receiptLoading}
+            className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 disabled:opacity-50 transition-colors"
+          >
+            {receiptLoading ? (
+              <>
+                <span className="inline-block w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                Scanning receipt…
+              </>
+            ) : (
+              <>📷 Scan receipt to auto-fill</>
+            )}
+          </button>
+          {receiptError && (
+            <p className="mt-1 text-xs text-red-500 dark:text-red-400">{receiptError}</p>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor="tx-amount" className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Amount ($)</label>

@@ -18,6 +18,7 @@ A personal finance tracker built as a hands-on learning project to explore every
 - **Import Statement** — paste a CSV, Claude extracts transactions via Files API
 - **Token Usage** — live cost tracking + pre-flight token counter
 - **Deep Analysis** — multi-month analysis using claude-opus-4-7 with extended thinking
+- **Receipt Scanner** — photograph a receipt to auto-fill the Add Transaction form (vision / image input)
 
 ## Tech stack
 
@@ -98,6 +99,7 @@ Open **http://localhost:5173**. If running inside a Claude Code session, the dat
 | GET | `/api/batch/:id/results` | Retrieve batch results |
 | POST | `/api/import/preview` | Extract transactions from CSV via Files API |
 | POST | `/api/analysis` | Deep analysis (claude-opus-4-7 + thinking) |
+| POST | `/api/receipt` | Extract transaction data from a receipt image (vision) |
 | GET | `/api/usage` | Accumulated token usage + costs |
 | POST | `/api/usage/count` | Count tokens without spending credits |
 
