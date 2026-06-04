@@ -19,6 +19,7 @@ A personal finance tracker built as a hands-on learning project to explore every
 - **Token Usage** — live cost tracking + pre-flight token counter
 - **Deep Analysis** — multi-month analysis using claude-opus-4-8 with live streaming extended thinking
 - **Receipt Scanner** — photograph a receipt to auto-fill the Add Transaction form (vision / image input)
+- **Finance DB MCP** — custom MCP server exposing the SQLite database to Claude Code for autonomous debugging
 
 ## Tech stack
 
@@ -50,6 +51,7 @@ finance-dashboard/
 ├── .claude/         # Claude Code settings, hooks, slash commands
 │   ├── settings.json    # Permissions, hooks, env vars
 │   └── commands/        # Custom slash commands
+├── .mcp.json        # Project MCP server registration (finance-db inspector)
 ├── LEARNING_ARC.md  # Phase log with objectives and commit refs
 └── USER_GUIDE.md    # How to run and use every feature
 ```
@@ -130,6 +132,7 @@ This repo ships with Claude Code configuration:
 - **`.claude/settings.json`** — hooks, permissions allowlist/deny list, dev env vars injected automatically
 - **`.claude/commands/`** — `/seed`, `/reset-db`, `/typecheck` and others available as slash commands inside Claude Code sessions
 - **`scripts/auto-seed.sh`** — called by the `SessionStart` hook; seeds the database when empty so every fresh session has demo data immediately
+- **`.mcp.json`** + **`server/mcp.ts`** — custom MCP server `finance-db` exposes 4 tools to Claude Code: `get_schema`, `get_row_counts`, `sample_rows`, `run_report`
 
 ### Hooks
 
